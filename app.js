@@ -49,7 +49,7 @@ exports.version = '0.0.1';
 var express = require('express')
     ,mongoose = require('mongoose')
     ,models = require('./models')
-    ,form = require('connect-form')
+    //,form = require('connect-form')
     ,_ = require('underscore')
     //,im = require('imagemagick')
     ,fs = require('fs')
@@ -74,8 +74,7 @@ var app = module.exports = express.createServer();
 
 app.configure(function(){
     app.set('views', __dirname + '/views');
-    //app.set('view engine', 'jade');
-    // make a custom html template
+    // custom html template
     app.register('.html', {
         compile: function(str, options){
             return function(locals){
@@ -83,10 +82,8 @@ app.configure(function(){
             };
         }
     });
-
-    app.use(form({ keepExtensions: true, uploadDir: documents_dir.tmp }));
     //app.use(express.compiler({ src: __dirname + '/public', enable: ['less'] }));
-    app.use(express.bodyParser());
+    app.use(express.bodyParser({ keepExtensions: true, uploadDir: documents_dir.tmp }));
     app.use(express.methodOverride());
     app.use(app.router);
     app.use(express.static(__dirname + '/public'));
@@ -202,39 +199,36 @@ app.get('/documents/:id', function(req, res, headers){
  *
  * @param {Object} request
  * @param {Object} response
- * @param {Object} headers
  * @return {Json} the saved document
  * @api public
  */
 
-app.post('/documents', function(req, res, headers){
+app.post('/documents', function(req, res){
 
     // pour tester
     //curl --silent -F resource=@test.pdf http://localhost:3000/documents | python -mjson.tool
 
-    req.form.complete(function(err, fields, files){
-        if (err) return handleError(res, err);
-        if (files.resource){
+    if (err) return handleError(res, err);
+    if (req.files.resource){
 
-            // Create document with temp file and resource info
-            var doc = new Document(_.extend(fields, { resource: {
-                name: files.resource.filename,
-                tmp: files.resource.path,
-            }}));
+        // Create document with temp file and resource info
+        var doc = new Document(_.extend(req.body, { resource: {
+            name: req.files.resource.filename,
+            tmp: req.files.resource.path,
+        }}));
 
-            // create thumbnail and save
-            doc.createThumbnail(convert_options, function(err){
-                if (err) return handleError(res, {'message' : 'Create thumbnail error'});
-                else doc.save(function(err){
-                    if (err) return handleError(res, err);
-                    res.send(doc, headers);
-                });
+        // create thumbnail and save
+        doc.createThumbnail(convert_options, function(err){
+            if (err) return handleError(res, {'message' : 'Create thumbnail error'});
+            else doc.save(function(err){
+                if (err) return handleError(res, err);
+                res.send(doc, headers);
             });
+        });
 
-        } else {
-            return handleError(res, {'message' : 'No files resources found'});
-        }
-    });
+    } else {
+        return handleError(res, {'message' : 'No files resources found'});
+    }
 
 });
 
@@ -268,36 +262,32 @@ app.put('/documents/:id', function(req, res, headers){
         if (err) return handleError(res, err);
         if (!doc) return res.send(404);
 
-        req.form.complete(function(err, fields, files){
-console.log('ici');
-            if (files.resource){
-console.log('file');
-                fields = _.extend(fields, { resource: {
-                    name: files.resource.filename,
-                    tmp: files.resource.path,
-                }});
-            }
-//console.log(file);
-            doc.set(fields);
+        fields = req.body;
+        if (req.files.resource){
+            fields = _.extend(req.body, { resource: {
+                name: req.files.resource.filename,
+                tmp: req.files.resource.path,
+            }});
+        }
+        doc.set(fields);
 
-            if (files.resource) {
-                // create thumbnail and save
-                doc.createThumbnail(convert_options, function(err){
-                    if (err) return handleError(res, {'message' : 'Create thumbnail error'});
-                    else doc.save(function(err){
-                        if (err) return handleError(res, err);
-                        console.log('save with file');
-                        res.send(doc, headers);
-                    });
-                });
-            } else {
-                // just save
-                doc.save(function(err){
+        if (req.files.resource) {
+            // create thumbnail and save
+            doc.createThumbnail(convert_options, function(err){
+                if (err) return handleError(res, {'message' : 'Create thumbnail error'});
+                else doc.save(function(err){
                     if (err) return handleError(res, err);
+                    console.log('save with file');
                     res.send(doc, headers);
-                })
-            }
-        });
+                });
+            });
+        } else {
+            // just save
+            doc.save(function(err){
+                if (err) return handleError(res, err);
+                res.send(doc, headers);
+            })
+        }
     });
 
 /*
