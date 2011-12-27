@@ -1,1 +1,10 @@
+# Node
 node_modules
+npm-debug.log
+# Eclipse
+.project
+
+# Guacamole
+documents/files/*
+documents/thumbs/*
+documents/tmp/*
