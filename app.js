@@ -148,23 +148,27 @@ app.get('/', function(req, res){
  *
  * @param {Object} request
  * @param {Object} response
- * @param {Object} headers
  * @return {Json} documents list
  * @api public
  */
 
-app.get('/documents', function(req, res, headers){
+app.get('/documents', function(req, res){
 
     var query = {};
     var tags;
+    var blackhole = '/';
 
     if (tags = req.query.tags){
         tags = _.isArray(tags) ? tags : tags.split(',');
-        query = {
-            // crado en attendant le $and de mongo 1.9.1 et support dans mongoose
-            // ou alors map / reduce ???
-            $where: 'function(){ var ok = true; ["' + tags.join('","') + '"].forEach(function(e){ if (obj.tags.indexOf(e) == -1) ok = false; }); return ok; }'
-        }
+        tags = _.map(tags, function(tag){
+            if (tag === blackhole) return { $or: [
+                { tags: blackhole },
+                { tags: { $not: /^\//g } }
+            ]};
+            if (typeof tag === 'object') return tag;
+            else return {tags:tag};
+        });
+        query = { $and: tags };
     }
 
     // LISTE et QUERY
@@ -181,16 +185,15 @@ app.get('/documents', function(req, res, headers){
  *
  * @param {Object} request
  * @param {Object} response
- * @param {Object} headers
  * @return {Json} one document matching the id parameter
  * @api public
  */
 
-app.get('/documents/:id', function(req, res, headers){
+app.get('/documents/:id', function(req, res){
     Document.findById(req.params.id, function(err, doc){
         if (err) return handleError(res, err);
         if (!doc) return res.send(404);
-        res.send(doc, headers);
+        res.send(doc);
     });
 });
 
@@ -222,7 +225,7 @@ app.post('/documents', function(req, res){
             if (err) return handleError(res, {'message' : 'Create thumbnail error'});
             else doc.save(function(err){
                 if (err) return handleError(res, err);
-                res.send(doc, headers);
+                res.send(doc);
             });
         });
 
@@ -237,16 +240,15 @@ app.post('/documents', function(req, res){
  *
  * @param {Object} request
  * @param {Object} response
- * @param {Object} headers
  */
 
-app.del('/documents/:id', function(req, res, headers){
+app.del('/documents/:id', function(req, res){
 
     Document.findById(req.params.id, function(err, doc){
         if (err) return handleError(res, err);
         if (!doc) return res.send(404);
         doc.remove(function(){
-            res.send({}, headers);
+            res.send({});
         });
     });
 
@@ -256,7 +258,7 @@ app.del('/documents/:id', function(req, res, headers){
  * PUT documents (update)
  */
 
-app.put('/documents/:id', function(req, res, headers){
+app.put('/documents/:id', function(req, res){
 
     Document.findById(req.params.id, function(err, doc){
         if (err) return handleError(res, err);
@@ -278,14 +280,14 @@ app.put('/documents/:id', function(req, res, headers){
                 else doc.save(function(err){
                     if (err) return handleError(res, err);
                     console.log('save with file');
-                    res.send(doc, headers);
+                    res.send(doc);
                 });
             });
         } else {
             // just save
             doc.save(function(err){
                 if (err) return handleError(res, err);
-                res.send(doc, headers);
+                res.send(doc);
             })
         }
     });
@@ -311,12 +313,11 @@ app.put('/documents/:id', function(req, res, headers){
  *
  * @param {Object} request
  * @param {Object} response
- * @param {Object} headers
  * @return {Json} status
  * @api public
  */
 
-app.post('/documents/batch/delete', function(req, res, headers){
+app.post('/documents/batch/delete', function(req, res){
 
     Document.find({ _id: req.params.ids }, function(err, docs){
         if (err) return handleError(res, err);
@@ -367,55 +368,27 @@ app.update('/documents/:id/thumbnail/', function(req, res){
  * GET /tags : all tags
  */
 
-app.get('/tags', function(req, res, headers){
+app.get('/tags', function(req, res){
 
-    Tag.find().sort('label', 'ascending').execFind(function (err, tags) {
-        if (err) return handleError(res, err);
-        res.send(tags, headers);
-    });
+    var query = {};
+    var subdirsof;
 
-    // TODO FILTRES ??
-/*
-app.get('/tags/semantic', function(req, res, headers){
+    // Récupération des /tags fils direct d'un /tag
+    if (subdirsof = req.query.subdirsof){
+        subdirsof = subdirsof.replace(new RegExp('/+$', 'g'), '');
+        var regexp = new RegExp("^" + subdirsof + "/", "i");
+        var deep = subdirsof.split('/').length + 1;
+        query = { $and: [
+            { label: regexp },
+            { $where: "this.label.split('/').length === " + deep }
+        ]};
+        if (subdirsof === '') query.$and.push({ label: { $ne: '/' } });
+    }
 
-    Tag.find({label:/^[^'::']/}).sort('label', 'ascending').execFind(function (err, tags) {
-        if (err) return handleError(res, err);
-        res.send(tags, headers);
-    });
-
-});
-app.get('/tags/treeview', function(req, res){
-
-    Tag.find({label:/^['::']/}).sort('label', 'ascending').execFind(function (err, tags) {
+    Tag.find(query).sort('label', 'ascending').execFind(function (err, tags) {
         if (err) return handleError(res, err);
         res.send(tags);
     });
-
-});
-app.get('/tags/starting/:str', function(req, res, headers){
-
-  var result = [];
-  // unwanted requests give all semantic tags
-    if (req.params.str.indexOf(':') == 0){
-        // Every unawted search returns all semantic tags
-        Tag.find({label:/^[^'::']/}).sort('label', 'ascending').execFind(function (err, tags) {
-            if (err) return handleError(res, err);
-            return res.send(tags, headers);
-        });
-    }
-
-    var regular = new RegExp("^" + req.params.str);
-    Tag.find({label:regular}).sort('label', 'ascending').execFind(function (err, tags) {
-        if (err) return handleError(res, err);
-        if(0 == tags.length){
-            return res.send(204);
-        }
-        res.send(tags, headers);
-
-    });
-
-});
-*/
 
 });
 

@@ -57,12 +57,10 @@ function define(mongoose, fn){
         }},
         'tags': { type: [String], set: function(v){
             var tags = v;
-            console.log(tags);
             if (v.length == 1) tags = _.invoke(v[0].split(','), function() { return tagify(this); });
             tags = _.uniq(tags);
             // Save new tags
             tags.forEach(function(tag_label){
-                console.log(tag_label);
                 if(tag_label.trim()){
                     Tag.findOne({ label: tag_label }, function(err, tag){
                         if (!tag){
