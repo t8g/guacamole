@@ -289,7 +289,7 @@ app.get('/tags', function(req, res){
  */
 
 app.post('/tags', function(req, res){
-    var tag = new Tag(req.body));
+    var tag = new Tag(req.body);
     tag.save(function(err){
         res.respond(err || tag, err ? 500 : 200);
     });
