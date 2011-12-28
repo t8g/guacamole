@@ -56,5 +56,29 @@ $(function($){
 		e.preventDefault();
 	});
 	
+	///////////////
+	//   @TODO   //
+	///////////////
+	var subdirsof = '/';
+	$.get('/tags', { subdirsof: subdirsof}, function(data) {
+	    var text =  '<li><a href="{{url}}" title=""><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a></li>',
+            template = Hogan.compile(text),
+            render = data.map(function (dir) {
+          return template.render({url: dir.label, label: dir.label.replace(subdirsof, '') });
+        }).join('');
+        
+	    $('#sub_directory ul').append(render)
+	});
+	
+	// http://guacamole:3000/documents?tags=/
+	/*
+    $.get('/tags', { subdirsof: '/'}, function(data) {
+        console.log(data);
+        var text =  '{{#data}}\
+                        <li><a href="#" title=""><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a></li>\
+                    {{/data}}';
+        $('#sub_directory ul').append(Hogan.compile(text).render({ data: data }))
+    });
+    */
 	
 });	
