@@ -3,7 +3,14 @@ var fs = require('fs')
     ,mime = require('mime')
     ,im = require('imagemagick')
     ,_ = require('underscore')
+    ,nconf = require('nconf')
     ;
+
+
+/**
+ * Configuration
+ */
+nconf.file({ file: './conf.json' });
 
 function define(mongoose, fn){
 
@@ -33,7 +40,7 @@ function define(mongoose, fn){
             // update file
             if (v.tmp && !v.file){
                 var filename = v.tmp.split('/').pop();
-                var pathfile = Document.documents_dir.files + '/' + filename.substr(0, 2);
+                var pathfile = nconf.get('documents:dirs:files') + '/' + filename.substr(0, 2);
 
                 path.exists(pathfile, function(exist){
                     if (!exist) fs.mkdirSync(pathfile, 0755);
@@ -103,19 +110,19 @@ function define(mongoose, fn){
     // thumbnail maker with imagemagick
     Document_Schema.methods.createThumbnail = function createThumbnail(options, callback){
         // @TODO place this in settings file
-        if (['image/jpeg', 'image/png', 'application/pdf'].indexOf(this.resource.mime) !== -1){
+        if (nconf.get('documents.thumbs.thumbables').indexOf(this.resource.mime) !== -1){
             var _this = this;
             var filename = this.resource.file.split('/').pop();
             im.resize(_.extend(options, {
-                srcPath: Document.documents_dir.files + this.resource.file + '[0]', // [0] first page pdf conversion
-                dstPath: Document.documents_dir.tmp + '/' + filename + '.png'
+                srcPath: nconf.get('documents:dirs:files') + this.resource.file + '[0]', // [0] first page pdf conversion
+                dstPath: nconf.get('documents:dirs:tmp') + '/' + filename + '.png'
             }), function(err){
                 if (err) callback(err);
                 else {  // move generated thumbnail
-                    var pathfile = Document.documents_dir.thumbs + '/' + filename.substr(0, 2);
+                    var pathfile = nconf.get('documents:dirs:thumbs') + '/' + filename.substr(0, 2);
                     path.exists(pathfile, function(exist){
                         if (!exist) fs.mkdirSync(pathfile, 0755);
-                        fs.rename(Document.documents_dir.tmp + '/' + filename + '.png', pathfile + '/' + filename + '.png', function(err){
+                        fs.rename(nconf.get('documents:dirs:tmp') + '/' + filename + '.png', pathfile + '/' + filename + '.png', function(err){
                             if (err) callback(err);
                             else {
                                 _this.resource.thumbnail = _this.resource.file + '.png';
@@ -130,6 +137,29 @@ function define(mongoose, fn){
             this.resource.thumbnail = 'default icon selon mime : ' + this.resource.mime;
             callback(null);
         }
+    };
+
+    Document_Schema.statics.getSome = function getSome(req, callback) {
+        var query = {};
+        var tags;
+
+        if (tags = req.tags){
+            tags = _.isArray(tags) ? tags : tags.split(',');
+            tags = _.map(tags, function(tag){
+                if (tag === nconf.get('documents:blackhole')) return { $or: [
+                    { tags: nconf.get('documents:blackhole') },
+                    { tags: { $not: /^\//g } }
+                ]};
+                if (typeof tag === 'object') return tag;
+                else return {tags:tag};
+            });
+            query = { $and: tags };
+        };
+
+        // LISTE et QUERY
+        // limit, offset, filtres, sort, search
+        return this.find(query, callback);
+
     };
 
     // @TODO : A mettre dans une lib

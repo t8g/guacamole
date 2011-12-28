@@ -5,57 +5,25 @@
  */
 
 /**
- * HTTP port
- */
-
-var port = 3000;
-
-/**
- * URL connexion mongo
- */
-
-var mongo_connection = 'mongodb://localhost/docs'
-
-/**
- * Upload directory
- */
-
-var documents_dir = {
-    tmp: __dirname + '/documents/tmp',
-    files: __dirname + '/documents/files',
-    thumbs: __dirname + '/documents/thumbs'
-}
-
-/**
- * Thumbnails options
- */
-
-var convert_options = {
-    width: 256,
-    height: 256,
-    format: 'png'
-};
-
-/**
- * Library version
- */
-
-exports.version = '0.0.1';
-
-/**
  * Module dependencies
  */
 
 var express = require('express')
     ,mongoose = require('mongoose')
     ,models = require('./models')
-    //,form = require('connect-form')
     ,_ = require('underscore')
-    //,im = require('imagemagick')
     ,fs = require('fs')
-    //,async = require('async')
-    //,tools = require('./tools')
+    ,nconf = require('nconf')
+    ,tools = require('./tools')
     ;
+
+/**
+ * Configuration
+ */
+
+nconf.file({ file: './conf.json' });
+
+require('./response');
 
 /**
  * Vars
@@ -64,8 +32,18 @@ var express = require('express')
 var db, headers, Document, Tag;
 
 /**
+ * Static Resources
+ */
+var public_resources = [];
+tools.readDir(__dirname + '/public', function(err, files){
+    public_resources = files;
+});
+
+
+/**
  * Server instance
  */
+
 var app = module.exports = express.createServer();
 
 /**
@@ -83,7 +61,7 @@ app.configure(function(){
         }
     });
     //app.use(express.compiler({ src: __dirname + '/public', enable: ['less'] }));
-    app.use(express.bodyParser({ keepExtensions: true, uploadDir: documents_dir.tmp }));
+    app.use(express.bodyParser({ keepExtensions: true, uploadDir: nconf.get('documents:dirs:tmp') }));
     app.use(express.methodOverride());
     app.use(app.router);
     app.use(express.static(__dirname + '/public'));
@@ -111,10 +89,7 @@ app.configure('production', function(){
 models.define(mongoose, function(){
     app.Document = Document = mongoose.model('Document');
     app.Tag = Tag = mongoose.model('Tag');
-    db = mongoose.connect(mongo_connection);
-
-    // Sharing the configuration
-    app.Document.documents_dir = documents_dir;
+    db = mongoose.connect(nconf.get('mongo:connection'));
 });
 
 /**
@@ -134,11 +109,6 @@ var handleError = function(res, err, status){
     return res.send(status, {error: err});
 }
 
-app.get('/', function(req, res){
-    //res.render('index.jade', { title: 'guacamole', layout: false });
-    res.render('index.html', { title: 'guacamole', layout: false });
-});
-
 /**
  * DOCUMENT Routes :
  */
@@ -153,31 +123,9 @@ app.get('/', function(req, res){
  */
 
 app.get('/documents', function(req, res){
-
-    var query = {};
-    var tags;
-    var blackhole = '/';
-
-    if (tags = req.query.tags){
-        tags = _.isArray(tags) ? tags : tags.split(',');
-        tags = _.map(tags, function(tag){
-            if (tag === blackhole) return { $or: [
-                { tags: blackhole },
-                { tags: { $not: /^\//g } }
-            ]};
-            if (typeof tag === 'object') return tag;
-            else return {tags:tag};
-        });
-        query = { $and: tags };
-    }
-
-    // LISTE et QUERY
-    // limit, offset, filtres, sort, search
-    Document.find(query, function (err, docs){
-        if (err) return handleError(res, err);
-        res.send(docs);
+    Document.getSome(req.query, function(err, docs){
+        res.respond(err || docs, err ? 500 : 200);
     });
-
 });
 
 /**
@@ -191,9 +139,8 @@ app.get('/documents', function(req, res){
 
 app.get('/documents/:id', function(req, res){
     Document.findById(req.params.id, function(err, doc){
-        if (err) return handleError(res, err);
-        if (!doc) return res.send(404);
-        res.send(doc);
+        console.log(typeof err);
+        res.respond(err || doc || 'Document not found', err ? 500 : (doc ? 200 : 404));
     });
 });
 
@@ -209,9 +156,7 @@ app.get('/documents/:id', function(req, res){
 app.post('/documents', function(req, res){
 
     // pour tester
-    //curl --silent -F resource=@test.pdf http://localhost:3000/documents | python -mjson.tool
-
-    if (err) return handleError(res, err);
+    //curl --silent -F resource=@test.pdf http://localhost:3000/documents | json
     if (req.files.resource){
 
         // Create document with temp file and resource info
@@ -221,7 +166,7 @@ app.post('/documents', function(req, res){
         }}));
 
         // create thumbnail and save
-        doc.createThumbnail(convert_options, function(err){
+        doc.createThumbnail(nconf.get('documents:thumbs'), function(err){
             if (err) return handleError(res, {'message' : 'Create thumbnail error'});
             else doc.save(function(err){
                 if (err) return handleError(res, err);
@@ -275,7 +220,7 @@ app.put('/documents/:id', function(req, res){
 
         if (req.files.resource) {
             // create thumbnail and save
-            doc.createThumbnail(convert_options, function(err){
+            doc.createThumbnail(nconf.get('document:thumbs'), function(err){
                 if (err) return handleError(res, {'message' : 'Create thumbnail error'});
                 else doc.save(function(err){
                     if (err) return handleError(res, err);
@@ -443,5 +388,14 @@ app.get('/documentation', function(req, res, headers){
 
 });
 
-app.listen(port);
+
+
+app.get('/*', function(req, res, next){
+    if ( public_resources.files.indexOf(__dirname + '/public/' + req.params[0]) === -1
+    && public_resources.dirs.indexOf(__dirname + '/public/' + req.params[0]) === -1 ) res.render('index.html', { title: 'guacamole', layout: false });
+    else next();
+});
+
+
+app.listen(nconf.get('application:port'));
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

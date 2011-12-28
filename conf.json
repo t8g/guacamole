@@ -1,0 +1,26 @@
+{
+    "application": {
+        "version": "0.0.1",
+        "port": 3000
+    },
+
+    "mongo": {
+        "connection": "mongodb://localhost/docs"
+    },
+
+    "documents": {
+        "dirs": {
+            "tmp": "./documents/tmp",
+            "files": "./documents/files",
+            "thumbs": "./documents/thumbs"
+        },
+        "thumbs": {
+            "width": 256,
+            "height": 256,
+            "format": "png",
+            "thumbables": ["image/jpeg", "image/png", "application/pdf"]
+        },
+        "blackhole": "/"
+    }
+
+}
