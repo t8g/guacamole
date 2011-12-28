@@ -27,7 +27,7 @@ nconf.file({ file: './conf.json' });
  * Vars
  */
 
-var db, headers, Document, Tag;
+var db, Document, Tag;
 
 /**
  * Static Resources
@@ -288,15 +288,14 @@ app.get('/tags', function(req, res){
  * POST tags (create)
  */
 
-app.post('/tags', function(req, res, headers){
-
-    // TODO
-    res.writeHead(501, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ message: 'not implemented' }));
-
+app.post('/tags', function(req, res){
+    var tag = new Tag(req.body));
+    tag.save(function(err){
+        res.respond(err || tag, err ? 500 : 200);
+    });
 });
 
-app.del('/tags/:id', function(req, res, headers){
+app.del('/tags/:id', function(req, res){
 
     // TODO
     // Interdire si documents ou forcer ?
@@ -315,7 +314,7 @@ app.del('/tags/:id', function(req, res, headers){
  * using app.routes.routes properties
  */
 
-app.get('/documentation', function(req, res, headers){
+app.get('/documentation', function(req, res){
 
     var routesDoc = [];
     var fillRoutesDoc = function(element, index, array){
@@ -331,7 +330,7 @@ app.get('/documentation', function(req, res, headers){
         "Guacamole API REST server documentation": {
             "Available requests URI": routesDoc,
         }
-    }, headers);
+    });
 
 });
 
