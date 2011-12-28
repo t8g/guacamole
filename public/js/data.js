@@ -16,6 +16,7 @@ $(function() {
     window.addEventListener('popstate', changeState);
       
     window.changeContent = function(path, first) {
+        path = path || location.pathname;
         // Remove the last /
         path = path.replace(/\/$/, '')
         
