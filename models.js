@@ -110,7 +110,7 @@ function define(mongoose, fn){
     // thumbnail maker with imagemagick
     Document_Schema.methods.createThumbnail = function createThumbnail(options, callback){
         // @TODO place this in settings file
-        if (nconf.get('documents.thumbs.thumbables').indexOf(this.resource.mime) !== -1){
+        if (nconf.get('documents:thumbs:thumbables').indexOf(this.resource.mime) !== -1){
             var _this = this;
             var filename = this.resource.file.split('/').pop();
             im.resize(_.extend(options, {
@@ -139,7 +139,7 @@ function define(mongoose, fn){
         }
     };
 
-    Document_Schema.statics.getSome = function getSome(req, callback) {
+    Document_Schema.statics.getSome = function getSome(req, callback){
         var query = {};
         var tags;
 
@@ -182,6 +182,26 @@ function define(mongoose, fn){
             return tagify(v);
         }}
     });
+
+    Tag_Schema.statics.getSome = function getSome(req, callback){
+        var query = {};
+        var subdirsof;
+
+        // Récupération des /tags fils direct d'un /tag
+        if (subdirsof = req.subdirsof){
+            subdirsof = subdirsof.replace(new RegExp('/+$', 'g'), '');
+            var regexp = new RegExp("^" + subdirsof + "/", "i");
+            var deep = subdirsof.split('/').length + 1;
+            query = { $and: [
+                { label: regexp },
+                { $where: "this.label.split('/').length === " + deep }
+            ]};
+            if (subdirsof === '') query.$and.push({ label: { $ne: '/' } });
+        }
+
+        return this.find(query).sort('label', 'ascending').execFind(callback);
+
+    };
 
     var Document = mongoose.model('Document', Document_Schema);
 

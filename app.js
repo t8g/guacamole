@@ -23,8 +23,6 @@ var express = require('express')
 
 nconf.file({ file: './conf.json' });
 
-require('./response');
-
 /**
  * Vars
  */
@@ -139,8 +137,7 @@ app.get('/documents', function(req, res){
 
 app.get('/documents/:id', function(req, res){
     Document.findById(req.params.id, function(err, doc){
-        console.log(typeof err);
-        res.respond(err || doc || 'Document not found', err ? 500 : (doc ? 200 : 404));
+        res.respond(err || doc, err ? 500 : ( doc ? 200 : 404 ));
     });
 });
 
@@ -156,10 +153,10 @@ app.get('/documents/:id', function(req, res){
 app.post('/documents', function(req, res){
 
     // pour tester
-    //curl --silent -F resource=@test.pdf http://localhost:3000/documents | json
+    //curl --silent -F resource=@test.pdf http://localhost:3000/documents -F tags=/bla | json
     if (req.files.resource){
 
-        // Create document with temp file and resource info
+        // create document with temp file and resource info
         var doc = new Document(_.extend(req.body, { resource: {
             name: req.files.resource.filename,
             tmp: req.files.resource.path,
@@ -167,15 +164,11 @@ app.post('/documents', function(req, res){
 
         // create thumbnail and save
         doc.createThumbnail(nconf.get('documents:thumbs'), function(err){
-            if (err) return handleError(res, {'message' : 'Create thumbnail error'});
-            else doc.save(function(err){
-                if (err) return handleError(res, err);
-                res.send(doc);
-            });
+            err ? res.respond(err, 500) : doc.save(function(err) { res.respond(err || doc, err ? 500 : 200); });
         });
 
     } else {
-        return handleError(res, {'message' : 'No files resources found'});
+        res.respond('No files resources found', 500);
     }
 
 });
@@ -188,15 +181,9 @@ app.post('/documents', function(req, res){
  */
 
 app.del('/documents/:id', function(req, res){
-
-    Document.findById(req.params.id, function(err, doc){
-        if (err) return handleError(res, err);
-        if (!doc) return res.send(404);
-        doc.remove(function(){
-            res.send({});
-        });
+    Document.remove({ _id: req.params.id }, function(err){
+        res.respond(err || {}, err ? 500 : 200);
     });
-
 });
 
 /**
@@ -206,6 +193,10 @@ app.del('/documents/:id', function(req, res){
 app.put('/documents/:id', function(req, res){
 
     Document.findById(req.params.id, function(err, doc){
+
+
+// T'es en train de bosser ici !!!
+
         if (err) return handleError(res, err);
         if (!doc) return res.send(404);
 
@@ -218,39 +209,19 @@ app.put('/documents/:id', function(req, res){
         }
         doc.set(fields);
 
-        if (req.files.resource) {
-            // create thumbnail and save
-            doc.createThumbnail(nconf.get('document:thumbs'), function(err){
-                if (err) return handleError(res, {'message' : 'Create thumbnail error'});
-                else doc.save(function(err){
-                    if (err) return handleError(res, err);
-                    console.log('save with file');
-                    res.send(doc);
+        if (req.files.resource) { // create thumbnail and save
+            doc.createThumbnail(nconf.get('documents:thumbs'), function(err){
+                err ? res.respond(err, 500) : doc.save(function(err) {
+                    res.respond(err || doc, err ? 500 : 200);
                 });
             });
-        } else {
-            // just save
+        } else { // just save
             doc.save(function(err){
-                if (err) return handleError(res, err);
-                res.send(doc);
+                res.respond(err || doc, err ? 500 : 200);
             })
         }
     });
 
-/*
-    // todo : gérer pièce jointe
-    // todo : si pj, recalculer thumbnail ?
-
-    Document.findById(req.params.id, function(err, doc){
-        if (err) return handleError(res, err);
-        if (!doc) return res.send(404);
-        doc.set(req.body);
-        doc.save(function(err){
-            if (err) return handleError(res, err);
-            return res.send(doc, headers);
-        });
-    });
-*/
 });
 
 /**
@@ -263,16 +234,9 @@ app.put('/documents/:id', function(req, res){
  */
 
 app.post('/documents/batch/delete', function(req, res){
-
-    Document.find({ _id: req.params.ids }, function(err, docs){
-        if (err) return handleError(res, err);
-        _.each(docs, function(doc){
-            doc.remove();
-        })
-//            res.send({}, headers);
-//        });
+    Document.remove({ _id: req.params.ids }, function(err){
+        res.respond(err || {}, err ? 500 : 200);
     });
-
 });
 
 /* TODO :
@@ -314,27 +278,10 @@ app.update('/documents/:id/thumbnail/', function(req, res){
  */
 
 app.get('/tags', function(req, res){
-
-    var query = {};
-    var subdirsof;
-
-    // Récupération des /tags fils direct d'un /tag
-    if (subdirsof = req.query.subdirsof){
-        subdirsof = subdirsof.replace(new RegExp('/+$', 'g'), '');
-        var regexp = new RegExp("^" + subdirsof + "/", "i");
-        var deep = subdirsof.split('/').length + 1;
-        query = { $and: [
-            { label: regexp },
-            { $where: "this.label.split('/').length === " + deep }
-        ]};
-        if (subdirsof === '') query.$and.push({ label: { $ne: '/' } });
-    }
-
-    Tag.find(query).sort('label', 'ascending').execFind(function (err, tags) {
+    Tag.getSome(req.query, function(err, tags) {
         if (err) return handleError(res, err);
         res.send(tags);
     });
-
 });
 
 /**
@@ -388,11 +335,8 @@ app.get('/documentation', function(req, res, headers){
 
 });
 
-
-
 app.get('/*', function(req, res, next){
-    if ( public_resources.files.indexOf(__dirname + '/public/' + req.params[0]) === -1
-    && public_resources.dirs.indexOf(__dirname + '/public/' + req.params[0]) === -1 ) res.render('index.html', { title: 'guacamole', layout: false });
+    if ( public_resources.indexOf(__dirname + '/public/' + req.params[0]) === -1 ) res.render('index.html', { layout: false });
     else next();
 });
 
