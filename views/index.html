@@ -154,22 +154,17 @@
                         </thead>
                         <tbody>
                         </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="5" style="text-align:right;">
-                                    <p>
-                                        Pour la sélection :
-                                        <select>
-                                            <option>Supprimer</option>
-                                            <option>Editer</option>
-                                            <option>Télécharger</option>
-                                        </select>
-                                        <button>ok</button>
-                                    </p>
-                                </td>
-                            </tr>
-                        </tfoot>
                     </table>
+                    <form action="/documents/batch/" style="text-align:right; opacity: 0;">
+                        Pour la sélection :
+                        <select>
+                            <option value="download">Télécharger
+                            <option value="edit">Editer les tags
+                            <option value="move">Déplacer
+                            <option value="delete">Supprimer
+                        </select>
+                        <button class="btn">ok</button>
+                    </form>
                 </section>
             </section>
         </section>
@@ -193,7 +188,6 @@
 <!-- Data injection -->
 <script src="/js/jquery.url.js"></script>
 <script src="/js/hogan.js"></script>
-<script src="/js/data.js"></script>
 
 <!-- Nice stuff -->
 <script src="/js/tag-it.js"></script>
