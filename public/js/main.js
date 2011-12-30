@@ -4,6 +4,7 @@ $(function($){
       , $subDirectory = $('#sub_directory ul')
       , $documents = $('#documents')
       , $tags = $('#tags')
+      , $globalTags = $('#global_tags')
       , $masterCheckbox = $documents.find('thead input')
       , $documentCheckboxes = $documents.find('tbody input');
 
@@ -13,7 +14,6 @@ $(function($){
     /********/
 
     $tags.tagit({
-        availableTags: ['thomas', 'laurence', 'sarah'],
         tagSource: function(search, showChoices) {
             $.get('/tags', { startwith: search.term.toLowerCase() }, function(data) {
                 showChoices(data.map(function(tag) {
@@ -56,6 +56,51 @@ $(function($){
         },
 
         removeConfirmation: true
+    });
+
+    $globalTags.tagit({
+        tagSource: function(search, showChoices) {
+            $.get('/tags', { startwith: search.term.toLowerCase() }, function(data) {
+                showChoices(data.map(function(tag) {
+                    return tag.label;
+                }));
+            });
+        },
+        onTagAdded: function(e, $tag) {
+            var tag = $globalTags.tagit('tagLabel', $tag);
+            if ($globalTags.data('some').indexOf(tag) !== -1) $tag.css({'opacity': '.5'});
+            else $globalTags.data('toadd', $globalTags.data('toadd').concat(tag));
+            if ((pos = $globalTags.data('todelete').indexOf(tag)) !== -1) {
+                var todelete = $globalTags.data('todelete');
+                todelete.splice(pos, 1);
+                $globalTags.data('todelete', todelete);
+            }
+        },
+        onTagRemoved: function(e, $tag) {
+            var tag = $globalTags.tagit('tagLabel', $tag);
+            if ((pos = $globalTags.data('toadd').indexOf(tag)) !== -1) {
+                var toadd = $globalTags.data('toadd');
+                toadd.splice(pos, 1);
+                $globalTags.data('toadd', toadd);
+            }
+            if ((pos = $globalTags.data('some').indexOf(tag)) !== -1) {
+                var some = $globalTags.data('some');
+                some.splice(pos, 1);
+                $globalTags.data('some', some);
+            }
+            $globalTags.data('todelete', $globalTags.data('todelete').concat(tag));
+        },
+        onTagClicked: function(e, $tag) {
+            var tag = $globalTags.tagit('tagLabel', $tag);
+            if ((pos = $globalTags.data('some').indexOf(tag)) !== -1) {
+                var some = $globalTags.data('some');
+                console.log(pos);
+                some.splice(pos, 1);
+                $globalTags.data('some', some);
+                $globalTags.data('toadd', $globalTags.data('toadd').concat(tag));
+                $tag.css({'opacity': '1'});
+            }
+        }
     });
 
 
@@ -142,7 +187,7 @@ $(function($){
     */
 
     /* Add sub-directories */
-   
+
     $('[action="/tags"]').on('submit', function(e) {
         e.preventDefault();
         var $this = $(this)
@@ -202,16 +247,38 @@ $(function($){
 
                 break;
             case 'tags':
-                var tags = toAdd = toDelete = [];
-                
-                //@TODO cache
-                var tags = []
+                var allinone = [];
+                var some = new Array(); // pas [] sinon avec concat, ça marche pas bien et pas some = allinone = new Array() ???
+
                 $documents.find('tbody tr').each(function() {
-                     var tag = $(this).data('tags').split(',');
-                     tags.indexOf(tag) === -1 && tags.push(tag)
+                    var doc_tags = $(this).data('tags');
+                    allinone.push(doc_tags);
+                    some = some.concat(doc_tags);
                 });
-                
-                console.log(tags);
+
+                // intersection de plusieurs tableaux
+                var every = allinone.reduce(function(m1, e1, i1) {
+                    if (i1 == 0) return e1;
+                    return e1.reduce(function(m2, e2) {
+                        if (m1.indexOf(e2) !== -1) m2.push(e2);
+                        return m2;
+                    }, []);
+                });
+
+                // create dashed tags
+                some = $.unique(some).filter(function(e) {
+                    return every.indexOf(e) == -1;
+                });
+
+                $globalTags.data('some', some);
+                $globalTags.data('toadd', []);
+                $globalTags.data('todelete', []);
+
+                // create tags
+                every.concat(some).sort().forEach(function(tag) {
+                    $globalTags.tagit("createTag", tag);
+                });
+
                 $('.global_tags').show()
             case 'edit':
 

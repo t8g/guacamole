@@ -19,8 +19,8 @@
 
     "thumbnails": {
         "options": {
-            "width": 256,
-            "height": 256,
+            "width": 64,
+            "height": 64,
             "format": "png"
         },
         "thumbables": ["image/jpeg", "image/png", "application/pdf"],

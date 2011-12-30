@@ -1986,6 +1986,11 @@ ul.tagit {
   overflow: hidden;
   padding: 7px 14px 2px 14px;
 }
+.global_tags ul.tagit {
+  border: none;
+  background: none;
+  box-shadow: none;
+}
 ul.tagit li {
   display: block;
   float: left;
@@ -2026,7 +2031,7 @@ ul.tagit li.tagit-choice:hover {
 ul.tagit li.tagit-choice:hover:before {
   border-color: transparent #00438a transparent transparent;
 }
-ul.tagit li.tagit-choice span.tagit-label {
+ul.tagit li.tagit-choice .tagit-label {
   cursor: pointer;
   text-decoration: none;
   padding-right: 20px;
