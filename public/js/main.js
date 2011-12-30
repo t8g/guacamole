@@ -202,8 +202,16 @@ $(function($){
 
                 break;
             case 'tags':
-                var toAdd = toDelete = [];
-                // @TODO
+                var tags = toAdd = toDelete = [];
+                
+                //@TODO cache
+                var tags = []
+                $documents.find('tbody tr').each(function() {
+                     var tag = $(this).data('tags').split(',');
+                     tags.indexOf(tag) === -1 && tags.push(tag)
+                });
+                
+                console.log(tags);
                 $('.global_tags').show()
             case 'edit':
 
@@ -319,7 +327,11 @@ $(function($){
                             // Size from o to ko
                             size: Math.ceil(doc.resource.size / 1024),
                             mime: doc.resource.mime.split('/')[1],
-                            id: doc._id
+                            id: doc._id,
+                            // jQuery map because `return null` does not store the value
+                            tags: $.map(doc.tags, function(tag) {
+                                    return /^\//.test(tag) ? null : '"' + tag + '"';
+                                }).join(',')
                         });
                     }).join('') :
                     template.render({ empty: true });
