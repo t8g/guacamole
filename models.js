@@ -106,13 +106,17 @@ function define(mongoose, fn) {
             default: Date.now
         }
     })
-    .pre('save', function (next) { // A tester
+    .pre('save', function(next) { // A tester
         if (!this.created_at) {
             this.created_at = this.updated_at = new Date;
         } else {
             this.updated_at = new Date;
         }
         next();
+    })
+    .pre('remove', function(next) {
+        // delete all resources
+        // Le probleme c'est que Model.remove() ne fait pas appel à ça
     });
 
     // virtual thumbnail getter and setter

@@ -1,4 +1,4 @@
-/**
+    /**
  * Guacamole.js
  * Copyright (c) 2011 Toog <contact@toog.fr>
  * MIT Licensed
@@ -250,14 +250,37 @@ app.post('/documents/batch/delete', function(req, res) {
     });
 });
 
+/**
+ * Mass update of documents tags
+ *
+ * @param {Object} request
+ * @param {Object} response
+ * @return {Json} status
+ * @api public
+ */
+
+app.post('/documents/batch/tags', function(req, res) {
+
+    Document.find({ _id: req.params.ids }, function(err, docs) {
+        if (err) return res.respond(err, 500);
+        docs.forEach(function(doc) {
+            var tags = doc.tags;
+            tags = _.difference(tags, req.params.todelete);
+            tags = _.union(tags, req.params.toadd);
+            doc.tags = tags;
+            doc.save();
+        });
+        return res.respond({}, 200);
+    });
+
+});
+
 /* TODO :
  * Ajouter les actions suivantes :
  *   - modification de masse (sur selection de documents) : sur liste
  *   - suppression masse : sur liste
  *  - update thumb : forcer recalcul de la thumbnail
  */
-
-
 
 /**
  * THUMBNAILS Routes :
