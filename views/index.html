@@ -91,7 +91,7 @@
             </div><!-- /topbar-inner -->
         </div><!-- /topbar -->
     </header><!-- /topbar-wrapper -->
-    
+
     <div id="global_content" class="container_12">
         <section id="content">
             <section id="navigation_docs" class="grid_12">
@@ -145,23 +145,30 @@
                     <table class="zebra-striped" id="sortTable">
                         <thead>
                             <tr>
-                                <th>Titre du document</th>
+                                <th style="width:50%;">Titre du document</th>
                                 <th>date de maj</th>
                                 <th>Poids</th>
                                 <th>Type</th>
-                                <th>
-                                    <select name="mediumSelect" id="mediumSelect">
-                                        <option>1</option>
-                                        <option>2</option>
-                                        <option>3</option>
-                                        <option>4</option>
-                                        <option>5</option>
-                                    </select>
-                                </th>
+                                <th><input type="checkbox" /></th>
                           </tr>
                         </thead>
                         <tbody>
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" style="text-align:right;">
+                                    <p>
+                                        Pour la sélection :
+                                        <select>
+                                            <option>Supprimer</option>
+                                            <option>Editer</option>
+                                            <option>Télécharger</option>
+                                        </select>
+                                        <button>ok</button>
+                                    </p>
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </section>
             </section>
@@ -184,6 +191,7 @@
 
 <!-- Script Library -->
 <!-- Data injection -->
+<script src="/js/jquery.url.js"></script>
 <script src="/js/hogan.js"></script>
 <script src="/js/data.js"></script>
 
