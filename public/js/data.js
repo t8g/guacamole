@@ -2,31 +2,33 @@ $(function() {
     // jQuery objects
     var $breadcrumb = $('.breadcrumb')
       , $subDirectory = $('#sub_directory ul')
-      , $sortTable = $('#sortTable');
+      , $documents = $('#documents')
+      , $tags = $('#tags');
 
     var changeState = function(e) {
         e.preventDefault();
-        var url = (e.currentTarget.pathname) ? e.currentTarget.pathname + e.currentTarget.search : e.target.location.pathname + e.target.location.search;
+        var url = e.currentTarget.pathname ? e.currentTarget.pathname + e.currentTarget.search : e.target.location.pathname + e.target.location.search;
         history.pushState({}, 'guacamole', url);
-        changeContent(url);
+        changeContent(url, e.type === 'popstate');
     }
 
     $breadcrumb.on('click', 'a', changeState)
     $subDirectory.on('click', 'a', changeState)
     window.addEventListener('popstate', changeState);
 
-    window.changeContent = function(url, donotupdatetag) {
-
-        var url = $.url(url);
-        var path = url.attr('path').replace(/\/$/, ''); // Remove the last /
-        var tags = url.param('tags') ? url.param('tags').split(',') : [];
+    window.changeContent = function(url, isPopstate) {
+        var url = $.url(url)
+            // Remove the last /
+          , path = url.attr('path').replace(/\/$/, '')
+          , tags = url.param('tags') ? url.param('tags').split(',') : [];
 
         // Add tags from url
-        if (!donotupdatetag && $('#removeConfirmationTags')) {
-            $("#removeConfirmationTags").tagit("removeAll");
-            $.each(tags, function(i, tag) {
-                $('#removeConfirmationTags').tagit("createTag", tag);
-            })
+        if (isPopstate || !$tags.data('run')) {
+            $tags.data('run', false).tagit('removeAll');
+            tags.forEach(function(tag, i) {
+                $tags.tagit("createTag", tag);
+            });
+            $tags.data('run', true)
         }
 
         // Flush the content
@@ -68,20 +70,20 @@ $(function() {
             $subDirectory.append(render);
         });
 
-        var alltags = tags;
-        alltags.push(path || '/');
+        var realTags = tags;
+        realTags.push(path || '/');
         // Show the documents
-        $.get('/documents', { tags: alltags.join(',') }, function(data) {
+        $.get('/documents', { tags: realTags.join(',') }, function(data) {
             var text =  '{{#title}}\
-                        <tr data-tags="[{{tags}}]">\
-                            <td><a href="/document/{{id}}">{{title}}</a>\
+                        <tr>\
+                            <td><a href="/documents/{{id}}/file">{{title}}<img src="/documents/{{id}}/thumbnail" /></a>\
                             <td>{{created_at}}\
                             <td>{{size}} ko\
                             <td>{{mime}}\
                             <td><input type="checkbox" name="optionsCheckboxes" />\
                         {{/title}}\
                         {{^title}}\
-                        <tr><td>T<td>O<td>D<td>O\
+                        <tr><td>T<td>O<td>D<td>O<td>\
                         {{/title}}'
               , template = Hogan.compile(text)
               , nbDocs = data.length
@@ -93,19 +95,26 @@ $(function() {
                             // Size from o to ko
                             size: Math.ceil(doc.resource.size / 1024),
                             mime: doc.resource.mime.split('/')[1],
-                            tags: doc.tags.map(function(tag){ return '"' + tag + '"'; }).join(','),
                             id: doc._id
                         });
                     }).join('') :
                     template.render({ empty: true });
 
-            $sortTable.find('tbody').html(render).end()
+            $documents.find('tbody').html(render).end()
             // The first time, initialize tablesorter, afterwards, update it
-            //if (first) {
-                $sortTable.tablesorter({ sortList: [[1,0]] });
-            //} else {
-                //$sortTable.trigger('update');
-            //}
+            if (!$documents.data('sorted')) {
+                $documents.tablesorter({
+                    sortList: [[1,0]],
+                    headers: {
+                        // Don't sort on checkboxes
+                        4: {
+                            sorter: false 
+                        }
+                    }
+                }).data('sorted', true);
+            } else {
+                $documents.trigger('update');
+            }
         });
     };
 
