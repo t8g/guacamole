@@ -6,8 +6,8 @@ $(function($){
       , $tags = $('#tags')
       , $masterCheckbox = $documents.find('thead input')
       , $documentCheckboxes = $documents.find('tbody input');
-      
-    
+
+
     /* Twipsy */
     $("[rel=twipsy]").twipsy({
         live: true
@@ -27,7 +27,7 @@ $(function($){
             var url = $.url(location.href)
               , tag = $tags.tagit('tagLabel', $tag)
               , tags = $tags.tagit('assignedTags');
-            
+
             if (tags.indexOf(tag) === -1) {
                 tags.push(tag);
                 url.data.param.query['tags'] = tags.join(',');
@@ -43,7 +43,7 @@ $(function($){
             var url = $.url(location.href)
               , tag = $tags.tagit('tagLabel', $tag)
               , tags = $tags.tagit('assignedTags');
-            
+
             tags.splice(tags.indexOf(tag), 1);
             if (!tags.length) {
                 delete url.data.param.query['tags'];
@@ -59,12 +59,12 @@ $(function($){
 
         removeConfirmation: true // Remove confirmation
     });
-    
+
 
     /************/
     /* Uploader */
     /************/
-   
+
     // Declare Elements
     var $uploader = $('#uploader')
       , $file = $('#file')
@@ -153,19 +153,19 @@ $(function($){
             changeContent();
         });
     });
-    
+
 
     /*************/
     /* Documents */
     /*************/
-    
+
     var $documentsForm = $documents.next(),
         $documentsAction = $documentsForm.find('select');
-    
+
     // Click on the checkboxes
     $documents.on('change', $documentCheckboxes, function(e) {
         var nbCheckbox = $documentCheckboxes.length;
-        
+
         if (nbCheckbox) {
             $documentsForm.css({ opacity: 1 });
             if ($documentCheckboxes.filter(':checked').length < nbCheckbox) {
@@ -175,7 +175,7 @@ $(function($){
             $documentsForm.css({ opacity: 0 });
         }
     });
-    
+
     // Change the $masterCheckbox
     $masterCheckbox.on('change', function(e) {
         // If all are checkec, uncheck
@@ -188,10 +188,10 @@ $(function($){
             $documentsForm.css({ opacity: 1 });
         }
     });
-    
+
     $documentsForm.on('submit', function(e) {
         e.preventDefault();
-        
+
         var action = $documentsAction.val()
           , url = $documentsForm.attr('action') + action
           , ids = [].map.call($documentCheckboxes.filter(':checked'), function(el, i) {
@@ -200,13 +200,13 @@ $(function($){
 
         switch (action) {
             case 'download':
-                
+
                 break;
             case 'edit':
-                
+
                 break;
             case 'move':
-                
+
                 break;
             case 'delete':
                 if (confirm('Êtes-vous sûr de vouloir supprimer ces documents ?')) {
@@ -216,10 +216,10 @@ $(function($){
                 }
                 break;
         }
-        
+
     })
-    
-    
+
+
     /********/
     /* Data */
     /********/
@@ -303,7 +303,7 @@ $(function($){
                             <td><input type="checkbox" value="{{id}}">\
                         {{/title}}\
                         {{^title}}\
-                        <tr><td>T<td>O<td>D<td>O<td>\
+                        <tr><td colspan="5">Aucun fichier\
                         {{/title}}'
               , template = Hogan.compile(text)
               , nbDocs = data.length
@@ -323,7 +323,7 @@ $(function($){
             // Uncheck the $masterCheckbox
             $masterCheckbox.prop('checked', false);
             $documentCheckboxes = $documents.find('tbody').html(render).find('input');
-            
+
             // The first time, initialize tablesorter, afterwards, update it
             if (!$documents.data('sorted')) {
                 $documents.tablesorter({
@@ -331,7 +331,7 @@ $(function($){
                     headers: {
                         // Don't sort on checkboxes
                         4: {
-                            sorter: false 
+                            sorter: false
                         }
                     }
                 }).data('sorted', true);
