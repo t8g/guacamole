@@ -261,9 +261,9 @@ app.post('/documents/batch/delete', function(req, res) {
 
 app.post('/documents/batch/tags', function(req, res) {
 
-    Document.find({ _id: req.params.ids }, function(err, docs) {
+    Document.find({ _id: { $in : req.body.ids } }, function(err, docs) {
         if (err) return res.respond(err, 500);
-        // @TODo : async version of that ???
+        // @TODO : async version of that ???
         docs.forEach(function(doc) {
             var tags = doc.tags;
             tags = _.difference(tags, req.params.todelete);
