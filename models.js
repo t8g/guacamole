@@ -127,9 +127,10 @@ function define(mongoose, fn) {
     });
 
     // thumbnail maker with imagemagick
-    Document_Schema.methods.createThumbnail = function createThumbnail(options, callback) {
+    Document_Schema.methods.createThumbnail = function createThumbnail(callback) {
+        var options = nconf.get('thumbnails:options');
         // @TODO place this in settings file
-        if (nconf.get('documents:thumbs:thumbables').indexOf(this.resource.mime) !== -1) {
+        if (nconf.get('thumbnails:thumbables').indexOf(this.resource.mime) !== -1) {
             var _this = this;
             var filename = this.resource.file.split('/').pop();
             im.resize(_.extend(options, {
@@ -152,8 +153,7 @@ function define(mongoose, fn) {
                 }
             });
         } else {
-            // thumbnail par défaut (selon mime)
-            this.resource.thumbnail = 'default icon selon mime : ' + this.resource.mime;
+            this.resource.thumbnail = '';
             callback(null);
         }
     };

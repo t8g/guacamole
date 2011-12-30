@@ -74,7 +74,7 @@ $(function() {
         $.get('/documents', { tags: alltags.join(',') }, function(data) {
             var text =  '{{#title}}\
                         <tr data-tags="[{{tags}}]">\
-                            <td><a href="/document/{{id}}">{{title}}</a>\
+                            <td><a href="/documents/{{id}}/file">{{title}}<img src="/documents/{{id}}/thumbnail" /></a>\
                             <td>{{created_at}}\
                             <td>{{size}} ko\
                             <td>{{mime}}\
