@@ -294,9 +294,10 @@ $(function($){
         realTags.push(path || '/');
         // Show the documents
         $.get('/documents', { tags: realTags.join(',') }, function(data) {
+            // <a href="/documents/{{id}}/file">{{title}}<img src="/documents/{{id}}/thumbnail" /></a>
             var text =  '{{#title}}\
                         <tr>\
-                            <td><a href="/documents/{{id}}/file">{{title}}<img src="/documents/{{id}}/thumbnail" /></a>\
+                            <td><a href="/documents/{{id}}">{{title}}\
                             <td>{{created_at}}\
                             <td>{{size}} ko\
                             <td>{{mime}}\
