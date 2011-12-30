@@ -137,8 +137,11 @@ function define(mongoose, fn) {
                 srcPath: nconf.get('documents:dirs:files') + this.resource.file + '[0]', // [0] first page pdf conversion
                 dstPath: nconf.get('documents:dirs:tmp') + '/' + filename + '.png'
             }), function(err) {
-                if (err) callback(err);
-                else {  // move generated thumbnail
+                if (err) {
+                    _this.resource.thumbnail = '';
+                    callback(null);
+                    //callback(err);
+                } else {  // move generated thumbnail
                     var pathfile = nconf.get('documents:dirs:thumbs') + '/' + filename.substr(0, 2);
                     path.exists(pathfile, function(exist) {
                         if (!exist) fs.mkdirSync(pathfile, 0755);

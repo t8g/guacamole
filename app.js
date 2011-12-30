@@ -273,7 +273,7 @@ app.get('/documents/:id/thumbnail', function(req, res) {
         // get generated thumbnail or default (mime dependent)
         var file = doc.resource.thumbnail
             ? nconf.get('documents:dirs:thumbs') + doc.resource.thumbnail
-            : nconf.get('thumbnails:default-path') + nconf.get('thumbnails:default')[doc.resource.mime] || nconf.get('thumbnails:default')['*'] || 'default.png';
+            : nconf.get('thumbnails:default-path') + (nconf.get('thumbnails:default')[doc.resource.mime] || nconf.get('thumbnails:default')['*'] || 'default.png');
 
         // A Mettre dans un module ... ou utiliser static ??? ---> pb du directory
         // Et à factoriser avec /documents/:id/file

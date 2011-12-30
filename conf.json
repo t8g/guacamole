@@ -27,7 +27,8 @@
         "default": {
             "*": "unknown.png",
             "video/x-msvideo": "video.png",
-            "application\/x-bzip2": "zip.png"
+            "application/x-bzip2": "zip.png",
+            "application/pdf": "pdf.png"
         },
         "default-path": "public/images/"
     }
