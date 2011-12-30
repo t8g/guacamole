@@ -122,17 +122,42 @@
                     -->
                 </ul>
             </section>
+            <style>
+            /* @FIXME a mettre dans les .less */
+            .overlay {
+                display: none;
+            }
+            
+            .overlay > div {
+                position: absolute;
+                top: 6px;
+                right: 6px;
+            }
+            </style>
             <section id="rightbar"  class="grid_8">
-                <section class="overlay global_uploads" style="display: none /* @FIXME */">
-                    <h3>Uploads en cours
-                        <div class="right">
-                            <button class="btn danger">Fermer</button>
-                            <button class="btn primary disabled" disabled>Édition par lots</button>
-                        </div>
-                    </h3>
+                <section class="overlay global_uploads">
+                    <h3>Uploads en cours</h3>
+                    <div class="right">
+                        <button class="btn danger">Fermer</button>
+                        <button class="btn primary" onclick="alert('@TODO')">Édition par lots</button>
+                    </div>
                     <ul>
                     </ul>
                 </section>
+                
+                <section class="overlay global_tags">
+                    <h3>Edition des tags</h3>
+                    <div class="right">
+                        <button class="btn danger">Fermer</button>
+                        <button class="btn primary disabled" disabled>Édition par lots</button>
+                    </div>
+                    
+                    <ul id="tags">
+                    </ul>
+                    <ul>
+                    </ul>
+                </section>
+                
                 <section id="navigation_tags">
                     <h3>Tags<span class="iconic tag"></span></h3>
                     <form>
@@ -159,7 +184,7 @@
                         Pour la sélection :
                         <select>
                             <option value="download">Télécharger
-                            <option value="edit">Editer les tags
+                            <option value="tags">Editer les tags
                             <option value="move">Déplacer
                             <option value="delete">Supprimer
                         </select>

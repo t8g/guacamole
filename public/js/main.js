@@ -8,12 +8,10 @@ $(function($){
       , $documentCheckboxes = $documents.find('tbody input');
       
     
-    /* Twipsy */
-    $("[rel=twipsy]").twipsy({
-        live: true
-    })
-
-    /* Tagit */
+    /********/
+    /* Tags */
+    /********/
+   
     $tags.tagit({
         availableTags: ['thomas', 'laurence', 'sarah'],
         tagSource: function(search, showChoices) {
@@ -57,7 +55,7 @@ $(function($){
             }
         },
 
-        removeConfirmation: true // Remove confirmation
+        removeConfirmation: true
     });
     
 
@@ -69,7 +67,7 @@ $(function($){
     var $uploader = $('#uploader')
       , $file = $('#file')
       , $rightbar = $('#rightbar')
-      , $overlayRightbar = $rightbar.find('.overlay');
+      , $overlayRightbar = $rightbar.find('.global_uploads');
 
     $file.on('click', function(e) {
         if ('webkitNotifications' in window && webkitNotifications.checkPermission() !== 0)
@@ -144,6 +142,7 @@ $(function($){
     */
 
     /* Add sub-directories */
+   
     $('[action="/tags"]').on('submit', function(e) {
         e.preventDefault();
         var $this = $(this)
@@ -202,8 +201,10 @@ $(function($){
             case 'download':
                 
                 break;
-            case 'edit':
-                
+            case 'tags':
+                var toAdd = toDelete = [];
+                // @TODO
+                $('.global_tags').show()
                 break;
             case 'move':
                 
@@ -295,7 +296,7 @@ $(function($){
         // Show the documents
         $.get('/documents', { tags: realTags.join(',') }, function(data) {
             var text =  '{{#title}}\
-                        <tr>\
+                        <tr data-tags="[{{tags}}]">\
                             <td><a href="/documents/{{id}}/file">{{title}}<img src="/documents/{{id}}/thumbnail" /></a>\
                             <td>{{created_at}}\
                             <td>{{size}} ko\
