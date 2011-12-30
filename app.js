@@ -174,7 +174,7 @@ app.post('/documents', function(req, res) {
         }}));
 
         // create thumbnail and save
-        doc.createThumbnail(nconf.get('documents:thumbs'), function(err) {
+        doc.createThumbnail(function(err) {
             err ? res.respond(err, 500) : doc.save(function(err) { res.respond(err || doc, err ? 500 : 200); });
         });
 
@@ -221,7 +221,7 @@ app.put('/documents/:id', function(req, res) {
         doc.set(fields);
 
         if (req.files.resource) { // create thumbnail and save
-            doc.createThumbnail(nconf.get('documents:thumbs'), function(err) {
+            doc.createThumbnail(function(err) {
                 err ? res.respond(err, 500) : doc.save(function(err) {
                     res.respond(err || doc, err ? 500 : 200);
                 });
@@ -264,47 +264,84 @@ app.post('/documents/batch/delete', function(req, res) {
  */
 
 app.get('/documents/:id/thumbnail', function(req, res) {
-   res.send('toto');
+
+    // @TODO : vérif droits
+
+    Document.findById(req.params.id, function(err, doc) {
+        if (err || _.isEmpty(doc)) res.respond('File Not Found', 404);
+
+        // get generated thumbnail or default (mime dependent)
+        var file = doc.resource.thumbnail
+            ? nconf.get('documents:dirs:thumbs') + doc.resource.thumbnail
+            : nconf.get('thumbnails:default-path') + nconf.get('thumbnails:default')[doc.resource.mime] || nconf.get('thumbnails:default')['*'] || 'default.png';
+
+        // A Mettre dans un module ... ou utiliser static ??? ---> pb du directory
+        // Et à factoriser avec /documents/:id/file
+        fs.stat(file, function(err, stat) {
+
+            // ignore ENOENT
+            if (err) {
+              return 'ENOENT' == err.code
+                ? res.respond('File Not Found', 404)
+                : next(err);
+            } else if (stat.isDirectory()) {
+              return next();
+            }
+
+            //res.setHeader('Date', new Date().toUTCString());
+            //res.setHeader('Last-Modified', stat.mtime.toUTCString());
+            res.setHeader('Content-Type', 'image/' + nconf.get('thumbnails:options:format'));// + (charset ? '; charset=' + charset : ''));
+            //res.setHeader('Content-Length', stat.size);
+            //res.setHeader('Content-Disposition: attachment; filename="'+doc.resource.name+'"');
+
+            // stream
+            var stream = fs.createReadStream(file);
+            req.emit('static', stream);
+            stream.pipe(res);
+
+        });
+
+    });
+
 });
 
 app.update('/documents/:id/thumbnail/', function(req, res) {
    res.send('toto');
 });
 
+/**
+ * Download document :
+ */
 
-app.get('/document/:id', function(req, res, next) {
+app.get('/documents/:id/file', function(req, res, next) {
+
+    // @TODO : vérif droits
 
     Document.findById(req.params.id, function(err, doc) {
-        if (err) res.respond('File Not Found', 404);
-
-        // @TODO : vérif droits
+        if (err || _.isEmpty(doc)) res.respond('File Not Found', 404);
         // @TODO : statistiques de téléchargement
-        var path = nconf.get('documents:dirs:files') + doc.resource.file;
+        var file = nconf.get('documents:dirs:files') + doc.resource.file;
 
         // A Mettre dans un module ... ou utiliser static ??? ---> pb du directory
-        fs.stat(path, function(err, stat) {
+        fs.stat(file, function(err, stat) {
 
             // ignore ENOENT
             if (err) {
               return 'ENOENT' == err.code
-                ? next()
+                ? res.respond('File Not Found', 404)
                 : next(err);
-            // redirect directory in case index.html is present
             } else if (stat.isDirectory()) {
               return next();
             }
 
             res.setHeader('Date', new Date().toUTCString());
             res.setHeader('Last-Modified', stat.mtime.toUTCString());
-            //res.setHeader('ETag', utils.etag(stat));
-            //var charset = mime.charsets.lookup(type);
             res.setHeader('Content-Type', doc.resource.mime);// + (charset ? '; charset=' + charset : ''));
-            //res.setHeader('Accept-Ranges', 'bytes');
             res.setHeader('Content-Length', stat.size);
             res.setHeader('Content-Disposition: attachment; filename="'+doc.resource.name+'"');
 
             // stream
-            var stream = fs.createReadStream(path);
+            var stream = fs.createReadStream(file);
             req.emit('static', stream);
             stream.pipe(res);
 

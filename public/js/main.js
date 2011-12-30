@@ -1,11 +1,15 @@
 $(function($){
+    /* jQuery objects */
+    var $tags = $('#tags')
+     , $documents = $('#documents');
+    
     /* Twipsy */
     $("[rel=twipsy]").twipsy({
         live: true
     })
 
     /* Tagit */
-    $('#removeConfirmationTags').tagit({
+    $tags.tagit({
         availableTags: ['thomas', 'laurence', 'sarah'],
         tagSource: function(search, showChoices) {
             $.get('/tags', { startwith: search.term.toLowerCase() }, function(data) {
@@ -14,31 +18,38 @@ $(function($){
                 }));
             });
         },
-        onTagAdded: function(evt, tag) {
-            tag = $(this).tagit('tagLabel', tag);
-            var url = $.url(document.location.href);
-            var tags = url.param('tags') ? url.param('tags').split(',') : [];
-
-            if (tags.indexOf(tag) == -1) {
+        onTagAdded: function(e, $tag) {
+            var url = $.url(location.href)
+              , tag = $tags.tagit('tagLabel', $tag)
+              , tags = $tags.tagit('assignedTags');
+            
+            if (tags.indexOf(tag) === -1) {
                 tags.push(tag);
                 url.data.param.query['tags'] = tags.join(',');
                 url = url.attr('path') + '?' + $.map(url.data.param.query, function(v,k) { return k + '=' + v; }).join('&');
-                history.pushState({}, 'guacamole', url);
-                changeContent(url, true);
+                if ($tags.data('run')) {
+                    history.pushState({}, 'guacamole', url);
+                    changeContent(url);
+                }
             }
 
         },
-        onTagRemoved: function(evt, tag) {
-
-            //console.log($(this).tagit("assignedTags"));
-            // @todo : arranger ça, par exemple ne pas afficher l'url ?tag= si plus de tags
-            var url = $.url(document.location.href);
-            var tags = url.param('tags') ? url.param('tags').split(',') : [];
-            tags.splice(tags.indexOf($(this).tagit('tagLabel', tag)), 1);
-            url.data.param.query['tags'] = tags.join(',');
-            url = url.attr('path') + '?' + $.map(url.data.param.query, function(v,k) { return k + '=' + v; }).join('&')
-            history.pushState({}, 'guacamole', url);
-            changeContent(url);
+        onTagRemoved: function(e, $tag) {
+            var url = $.url(location.href)
+              , tag = $tags.tagit('tagLabel', $tag)
+              , tags = $tags.tagit('assignedTags');
+            
+            tags.splice(tags.indexOf(tag), 1);
+            if (!tags.length) {
+                delete url.data.param.query['tags'];
+            } else {
+                url.data.param.query['tags'] = tags.join(',');
+            }
+            url = url.attr('path') + '?' + $.map(url.data.param.query, function(v,k) { return k + '=' + v; }).join('&');
+            if ($tags.data('run')) {
+                history.pushState({}, 'guacamole', url.replace(/\?$/, ''));
+                changeContent(url);
+            }
         },
 
         removeConfirmation: true // Remove confirmation
@@ -66,6 +77,7 @@ $(function($){
         var files = this.files;
 
         [].forEach.call(files, function(file, i) {
+            // Ne marche pas sur IE9 et Opera http://caniuse.com/#search=formdata
             var formData = new FormData()
               , xhr = new XMLHttpRequest()
               , $progress;
@@ -122,7 +134,8 @@ $(function($){
     });
     */
 
-    $('.pull-left').on('submit', function(e) {
+    /* Add sub-directories */
+    $('[action="/tags"]').on('submit', function(e) {
         e.preventDefault();
         var $this = $(this)
           , label = $this.find('input').val();
@@ -130,6 +143,22 @@ $(function($){
         $.post($this.attr('action'), { label: location.pathname.replace(/\/$/, '') + '/' + label }, function() {
             changeContent();
         });
-    })
+    });
+    
+    
+    /*************/
+    /* Documents */
+    /*************/
+   
+    $documents.on('change', 'thead input', function(e) {
+        var $checkboxes = $documents.find('tbody input');
+        // If all are checkec, uncheck
+        if ($checkboxes.filter(':checked').length === $checkboxes.length) {
+            
+        // Else, check all
+        } else {
+            
+        }
+    });
 
 });

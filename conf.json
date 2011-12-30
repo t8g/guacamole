@@ -14,13 +14,22 @@
             "files": "./documents/files",
             "thumbs": "./documents/thumbs"
         },
-        "thumbs": {
+        "blackhole": "/"
+    },
+
+    "thumbnails": {
+        "options": {
             "width": 256,
             "height": 256,
-            "format": "png",
-            "thumbables": ["image/jpeg", "image/png", "application/pdf"]
+            "format": "png"
         },
-        "blackhole": "/"
+        "thumbables": ["image/jpeg", "image/png", "application/pdf"],
+        "default": {
+            "*": "unknown.png",
+            "video/x-msvideo": "video.png",
+            "application\/x-bzip2": "zip.png"
+        },
+        "default-path": "public/images/"
     }
 
 }
