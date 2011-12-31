@@ -16,6 +16,7 @@ var express = require('express')
     ,nconf = require('nconf')
     ,tools = require('./tools')
     ,async = require('async')
+    ,zip = require('node-native-zip')
     ;
 
 /**
@@ -251,6 +252,56 @@ app.post('/documents/batch/delete', function(req, res) {
     });
 });
 
+
+/**
+ * Mass download of documents
+ *
+ * @param {Object} request
+ * @param {Object} response
+ * @return {Json} status
+ * @api public
+ */
+
+app.post('/documents/batch/download', function(req, res, next) {
+    Document.find({ _id: { $in : req.body.ids } }, function(err, docs) {
+        if (err) return res.respond(err, 500);
+        var zipfile = new zip();
+        zipfile.addFiles(
+            docs.map(function(doc) {
+                return {
+                    name: doc.resource.name,
+                    path: nconf.get('documents:dirs:files') + doc.resource.file
+                }
+            }),
+            function () {
+                var buff = zipfile.toBuffer();
+                var zipfilename = new Date().getTime() + '.zip';
+                fs.writeFile(nconf.get('documents:dirs:tmp') + '/' + zipfilename , buff, function () {
+                    res.respond({ 'zipfile': zipfilename }, 200);
+                });
+            },
+            function (err) {
+                res.respond(err, 500);
+            }
+        );
+    });
+});
+
+app.get('/documents/batch/download/:zipfile', function(req, res, next) {
+       tools.serve(
+        nconf.get('documents:dirs:tmp') + '/' + req.params.zipfile,
+        [
+            {name: 'Date', value: new Date().toUTCString()},
+            //{name: 'Last-Modified', value: stat.mtime.toUTCString()},
+            {name: 'Content-Type', value: 'application/zip'},
+            {name: 'Content-Disposition: attachment; filename="'+req.params.zipfile+'"'}
+        ],
+        req,
+        res,
+        next
+    );
+});
+
 /**
  * Mass update of documents tags
  *
@@ -350,33 +401,19 @@ app.get('/documents/:id/file', function(req, res, next) {
     Document.findById(req.params.id, function(err, doc) {
         if (err || _.isEmpty(doc)) res.respond('File Not Found', 404);
         // @TODO : statistiques de téléchargement
-        var file = nconf.get('documents:dirs:files') + doc.resource.file;
+        var file =
 
-        // A Mettre dans un module ... ou utiliser static ??? ---> pb du directory
-        fs.stat(file, function(err, stat) {
-
-            // ignore ENOENT
-            if (err) {
-              return 'ENOENT' == err.code
-                ? res.respond('File Not Found', 404)
-                : next(err);
-            } else if (stat.isDirectory()) {
-              return next();
-            }
-
-            res.setHeader('Date', new Date().toUTCString());
-            res.setHeader('Last-Modified', stat.mtime.toUTCString());
-            res.setHeader('Content-Type', doc.resource.mime);// + (charset ? '; charset=' + charset : ''));
-            res.setHeader('Content-Length', stat.size);
-            res.setHeader('Content-Disposition: attachment; filename="'+doc.resource.name+'"');
-
-            // stream
-            var stream = fs.createReadStream(file);
-            req.emit('static', stream);
-            stream.pipe(res);
-
-        });
-
+        tools.serve(
+            nconf.get('documents:dirs:files') + doc.resource.file,
+            [
+                {name: 'Date', value: new Date().toUTCString()},
+                //{name: 'Last-Modified', value: stat.mtime.toUTCString()},
+                {name: 'Content-Type', value: doc.resource.mime},
+                {name: 'Content-Disposition: attachment; filename="'+doc.resource.name+'"'}
+            ],
+            res,
+            next
+        );
     });
 
 });

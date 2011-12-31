@@ -244,7 +244,16 @@ $(function($){
 
         switch (action) {
             case 'download':
-
+                $('.global_download').show();
+                $('.global_download').html('MESSAGE ATTENTE ... + GIF ANIME OU ... ');
+                $.post(url, { ids: ids }, function(data) {
+                    if (data.zipfile) {
+                        $('.global_download').html('<a href="' + '/documents/batch/download/' + data.zipfile + '">' + data.zipfile + '</a>');
+                    } else {
+                        $('.global_download').hide();
+                        alert('Error while creating archive file');
+                    }
+                });
                 break;
             case 'tags':
                 var allinone = [];
@@ -279,7 +288,7 @@ $(function($){
                     $globalTags.tagit("createTag", tag);
                 });
 
-                $('.global_tags').show()
+                $('.global_tags').show();
             case 'edit':
 
                 break;

@@ -11,26 +11,26 @@ var fs = require('fs')
  *  - res.respond(content, status) → ok, you got it :)
  */
 http.ServerResponse.prototype.respond = function (content, status) {
-  if ('undefined' == typeof status) { // only one parameter found
-    if ('number' == typeof content || !isNaN(parseInt(content))) { // usage "respond(status)"
-      status = parseInt(content);
-      content = undefined;
-    } else { // usage "respond(content)"
-      status = 200;
+    if ('undefined' == typeof status) { // only one parameter found
+        if ('number' == typeof content || !isNaN(parseInt(content))) { // usage "respond(status)"
+            status = parseInt(content);
+            content = undefined;
+        } else { // usage "respond(content)"
+            status = 200;
+        }
     }
-  }
-  if (status != 200) { // error
-    content = {
-      "code":    status,
-      "status":  http.STATUS_CODES[status],
-      "message": content && content.toString() || null
-    };
-  }
-  if ('object' != typeof content) { // wrap content if necessary
-    content = {"result":content};
-  }
-  // respond with JSON data
-  this.send(content, status);
+    if (status != 200) { // error
+        content = {
+            "code":        status,
+            "status":    http.STATUS_CODES[status],
+            "message": content && content.toString() || null
+        };
+    }
+    if ('object' != typeof content) { // wrap content if necessary
+        content = {"result":content};
+    }
+    // respond with JSON data
+    this.send(content, status);
 };
 
 function readDir(start, callback) {
@@ -75,4 +75,33 @@ function readDir(start, callback) {
     });
 };
 
+// en faire un vrai middleware ???
+function serve(file, headers, req, res, next) {
+    // file, next, header, res
+    fs.stat(file, function(err, stat) {
+
+        // ignore ENOENT
+        if (err) {
+          return 'ENOENT' == err.code
+            ? res.respond('File Not Found', 404)
+            : next(err);
+        } else if (stat.isDirectory()) {
+          return next();
+        }
+
+        headers.forEach(function(header) {
+            res.setHeader(header.name, header.value || null);
+        });
+
+        res.setHeader('Content-Length', stat.size);
+
+        // stream
+        var stream = fs.createReadStream(file);
+        req.emit('static', stream);
+        stream.pipe(res);
+
+    });
+}
+
 exports.readDir = readDir;
+exports.serve = serve;
