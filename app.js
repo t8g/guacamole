@@ -15,6 +15,7 @@ var express = require('express')
     ,fs = require('fs')
     ,nconf = require('nconf')
     ,tools = require('./tools')
+    ,async = require('async')
     ;
 
 /**
@@ -263,15 +264,20 @@ app.post('/documents/batch/tags', function(req, res) {
 
     Document.find({ _id: { $in : req.body.ids } }, function(err, docs) {
         if (err) return res.respond(err, 500);
-        // @TODO : async version of that ???
-        docs.forEach(function(doc) {
-            var tags = doc.tags;
-            tags = _.difference(tags, req.params.todelete);
-            tags = _.union(tags, req.params.toadd);
-            doc.tags = tags;
-            doc.save();
-        });
-        return res.respond({}, 200);
+
+        async.forEach(
+            docs,
+            function(doc) {
+                var tags = doc.tags;
+                tags = _.difference(tags, req.params.todelete);
+                tags = _.union(tags, req.params.toadd);
+                doc.tags = tags;
+                doc.save();
+            },
+            function(err) {
+                res.respond(err || {}, err ? 500 : 200);
+            }
+        );
     });
 
 });
