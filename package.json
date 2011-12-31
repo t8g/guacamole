@@ -9,5 +9,6 @@
     , "imagemagick": ">= 0.1.2"
     , "mime": ">= 1.2.4"
     , "async": ">= 0.1.15"
+    , "node-native-zip": ">=1.0.0"
   }
 }
