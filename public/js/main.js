@@ -8,6 +8,19 @@ $(function($){
       , $masterCheckbox = $documents.find('thead input')
       , $documentCheckboxes = $documents.find('tbody input');
 
+    // close button on overlays
+    $('button.hide').click(function(ev) {
+        ev.preventDefault();
+        $(this).parents('.overlay').hide();
+    });
+
+    $('#documents tbody a').live('click', function(ev) {
+        ev.preventDefault();
+        $.get(this.href, function(data) {
+            $('.document_edit').show();
+            $('.document_edit .content').text(JSON.stringify(data));
+        });
+    });
 
     /********/
     /* Tags */
@@ -103,6 +116,21 @@ $(function($){
         }
     });
 
+
+    $('#save_global_tags').click(function(ev) {
+        ev.preventDefault();
+        var overlay = $(this).parents('.overlay');
+        $.post('/documents/batch/tags', {
+            ids: [].map.call($documentCheckboxes.filter(':checked'), function(el, i) {
+                return el.value;
+            }),
+            toadd: $globalTags.data('toadd'),
+            todelete: $globalTags.data('todelete')
+            }, function(data) {
+                console.log(data);
+                overlay.hide();
+            });
+    });
 
     /************/
     /* Uploader */
@@ -245,10 +273,10 @@ $(function($){
         switch (action) {
             case 'download':
                 $('.global_download').show();
-                $('.global_download').html('MESSAGE ATTENTE ... + GIF ANIME OU ... ');
+                $('.global_download .content').html('MESSAGE ATTENTE ... + GIF ANIME OU ... ');
                 $.post(url, { ids: ids }, function(data) {
                     if (data.zipfile) {
-                        $('.global_download').html('<a href="' + '/documents/batch/download/' + data.zipfile + '">' + data.zipfile + '</a>');
+                        $('.global_download .content').html('<a href="' + '/documents/batch/download/' + data.zipfile + '">' + data.zipfile + '</a>');
                     } else {
                         $('.global_download').hide();
                         alert('Error while creating archive file');

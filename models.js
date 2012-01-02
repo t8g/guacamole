@@ -245,8 +245,9 @@ function define(mongoose, fn) {
     Document.prototype.save = function(fn) {
         var self = this;
         self._save(function(err) {
-            if (!err) fn(err);
-            else if (err.message.indexOf('E11000') == 0) { // Sans doute prévoir un meilleur test (quid si autre champ unique ?)
+            if (!err) {
+                if (fn) fn(err);
+            } else if (err.message.indexOf('E11000') == 0) { // Sans doute prévoir un meilleur test (quid si autre champ unique ?)
                 // calcul du nouveau slug
                 var slug = self.slug.split('-');
                 var i = (slug.length > 1) ? slug.pop() : 0;
@@ -254,7 +255,8 @@ function define(mongoose, fn) {
                 self.isNew = true;
                 self.save(fn);
             } else {
-                throw new Error(err.message)
+                //throw new Error(err.message)
+                fn(err);
             }
         });
     };

@@ -133,12 +133,18 @@
                 top: 6px;
                 right: 6px;
             }
+
+            .overlay > div.content {
+                position: relative;
+                margin: 20px;
+                color: #fff;
+            }
             </style>
             <section id="rightbar"  class="grid_8">
                 <section class="overlay global_uploads">
                     <h3>Uploads en cours</h3>
                     <div class="right">
-                        <button class="btn danger">Fermer</button>
+                        <button class="btn danger hide">Fermer</button>
                         <button class="btn primary" onclick="alert('@TODO')">Édition par lots</button>
                     </div>
                     <ul>
@@ -148,22 +154,30 @@
                 <section class="overlay global_tags">
                     <h3>Edition des tags</h3>
                     <div class="right">
-                        <button class="btn danger">Fermer</button>
+                        <button class="btn danger hide">Fermer</button>
                     </div>
-                    <div style="position:relative;margin:20px;">
+                    <div class="content">
                         <ul id="global_tags">
                         </ul>
-                        <button class="btn">Enregistrer</button>
+                        <button class="btn" id="save_global_tags">Enregistrer</button>
                     </div>
                 </section>
 
                 <section class="overlay global_download">
                     <h3>Téléchargement archive</h3>
                     <div class="right">
-                        <button class="btn danger">Fermer</button>
+                        <button class="btn danger hide">Fermer</button>
                     </div>
-                    <div style="position:relative;margin:20px;">
- kjhkjhkjhkjh
+                    <div class="content">
+                    </div>
+                </section>
+
+                <section class="overlay document_edit">
+                    <h3>Document</h3>
+                    <div class="right">
+                        <button class="btn danger hide">Fermer</button>
+                    </div>
+                    <div class="content">
                     </div>
                 </section>
 
@@ -192,9 +206,9 @@
                     <form action="/documents/batch/" style="text-align:right; opacity: 0;">
                         Pour la sélection :
                         <select>
-                            <option value="download">Télécharger archive
                             <option value="tags">Editer les tags
                             <option value="move">Déplacer
+                            <option value="download">Télécharger archive
                             <option value="delete">Supprimer
                         </select>
                         <button class="btn">ok</button>

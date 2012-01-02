@@ -300,6 +300,7 @@ app.get('/documents/batch/download/:zipfile', function(req, res, next) {
         res,
         next
     );
+    // supprimer le zip une fois télécharger ou régulièrement ?
 });
 
 /**
@@ -318,15 +319,16 @@ app.post('/documents/batch/tags', function(req, res) {
 
         async.forEach(
             docs,
-            function(doc) {
+            function(doc, fn) {
                 var tags = doc.tags;
-                tags = _.difference(tags, req.params.todelete);
-                tags = _.union(tags, req.params.toadd);
+                tags = _.difference(tags, req.body.todelete);
+                tags = _.union(tags, req.body.toadd);
                 doc.tags = tags;
-                doc.save();
+                doc.save(fn);
             },
             function(err) {
-                res.respond(err || {}, err ? 500 : 200);
+                console.log('fin');
+                return res.respond(err || {}, err ? 500 : 200);
             }
         );
     });
