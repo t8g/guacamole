@@ -346,7 +346,7 @@ app.post('/documents/batch/tags', function(req, res) {
  * THUMBNAILS Routes :
  */
 
-app.get('/documents/:id/thumbnail', function(req, res) {
+app.get('/documents/:id/thumbnail', function(req, res, next) {
 
     // @TODO : vérif droits
 
@@ -358,32 +358,7 @@ app.get('/documents/:id/thumbnail', function(req, res) {
             ? nconf.get('documents:dirs:thumbs') + doc.resource.thumbnail
             : nconf.get('thumbnails:default-path') + (nconf.get('thumbnails:default')[doc.resource.mime] || nconf.get('thumbnails:default')['*'] || 'default.png');
 
-        // A Mettre dans un module ... ou utiliser static ??? ---> pb du directory
-        // Et à factoriser avec /documents/:id/file
-        fs.stat(file, function(err, stat) {
-
-            // ignore ENOENT
-            if (err) {
-              return 'ENOENT' == err.code
-                ? res.respond('File Not Found', 404)
-                : next(err);
-            } else if (stat.isDirectory()) {
-              return next();
-            }
-
-            //res.setHeader('Date', new Date().toUTCString());
-            //res.setHeader('Last-Modified', stat.mtime.toUTCString());
-            res.setHeader('Content-Type', 'image/' + nconf.get('thumbnails:options:format'));// + (charset ? '; charset=' + charset : ''));
-            //res.setHeader('Content-Length', stat.size);
-            //res.setHeader('Content-Disposition: attachment; filename="'+doc.resource.name+'"');
-
-            // stream
-            var stream = fs.createReadStream(file);
-            req.emit('static', stream);
-            stream.pipe(res);
-
-        });
-
+        tools.serve(file, [ { name: 'Content-Type', value: 'image/' + nconf.get('thumbnails:options:format') } ], req, res, next );
     });
 
 });
@@ -413,6 +388,7 @@ app.get('/documents/:id/file', function(req, res, next) {
                 {name: 'Content-Type', value: doc.resource.mime},
                 {name: 'Content-Disposition: attachment; filename="'+doc.resource.name+'"'}
             ],
+            req,
             res,
             next
         );

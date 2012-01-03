@@ -1,9 +1,9 @@
 var fs = require('fs')
-    ,path = require('path')
-    ,mime = require('mime')
-    ,im = require('imagemagick')
-    ,_ = require('underscore')
-    ,nconf = require('nconf')
+    , path = require('path')
+    , mime = require('mime')
+    , im = require('imagemagick')
+    , _ = require('underscore')
+    , nconf = require('nconf')
     ;
 
 
@@ -228,6 +228,7 @@ function define(mongoose, fn) {
         }
 
         if (startwith = req.startwith) {
+            if (startwith[0] === '/' && req.slash && req.slash === 'false') return [];
             query = { label: new RegExp('^' + startwith, 'i') };
         }
 

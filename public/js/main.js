@@ -25,17 +25,18 @@ $(function($){
     /********/
     /* Tags */
     /********/
-
+// PREVOIR INTERDIR "/"
+// GERER LES TAGS DE MANIERE GLOBALE (AVEC LES OPTIONS : SLASH OU PAS, ...)
     $tags.tagit({
         tagSource: function(search, showChoices) {
-            $.get('/tags', { startwith: search.term.toLowerCase() }, function(data) {
+            $.get('/tags', { startwith: search.term.toLowerCase(), slash: false }, function(data) {
                 showChoices(data.map(function(tag) {
                     return tag.label;
                 }));
             });
         },
         onTagAdded: function(e, $tag) {
-            var url = $.url(location.href)
+            var url = $.url(location.href) // à remplacer par http://medialize.github.com/URI.js/
               , tag = $tags.tagit('tagLabel', $tag)
               , tags = $tags.tagit('assignedTags');
 
@@ -73,49 +74,47 @@ $(function($){
 
     $globalTags.tagit({
         tagSource: function(search, showChoices) {
-            $.get('/tags', { startwith: search.term.toLowerCase() }, function(data) {
+            $.get('/tags', { startwith: search.term.toLowerCase(), slash: false }, function(data) {
                 showChoices(data.map(function(tag) {
                     return tag.label;
                 }));
             });
         },
         onTagAdded: function(e, $tag) {
-            var tag = $globalTags.tagit('tagLabel', $tag);
-            if ($globalTags.data('some').indexOf(tag) !== -1) $tag.css({'opacity': '.5'});
-            else $globalTags.data('toadd', $globalTags.data('toadd').concat(tag));
-            if ((pos = $globalTags.data('todelete').indexOf(tag)) !== -1) {
-                var todelete = $globalTags.data('todelete');
+            var tag = $(this).tagit('tagLabel', $tag);
+            if ($(this).data('some').indexOf(tag) !== -1) $tag.css({'opacity': '.5'});
+            else $(this).data('toadd', $(this).data('toadd').concat(tag));
+            if ((pos = $(this).data('todelete').indexOf(tag)) !== -1) {
+                var todelete = $(this).data('todelete');
                 todelete.splice(pos, 1);
-                $globalTags.data('todelete', todelete);
+                $(this).data('todelete', todelete);
             }
         },
         onTagRemoved: function(e, $tag) {
-            var tag = $globalTags.tagit('tagLabel', $tag);
-            if ((pos = $globalTags.data('toadd').indexOf(tag)) !== -1) {
-                var toadd = $globalTags.data('toadd');
+            var tag = $(this).tagit('tagLabel', $tag);
+            if ((pos = $(this).data('toadd').indexOf(tag)) !== -1) {
+                var toadd = $(this).data('toadd');
                 toadd.splice(pos, 1);
-                $globalTags.data('toadd', toadd);
+                $(this).data('toadd', toadd);
             }
-            if ((pos = $globalTags.data('some').indexOf(tag)) !== -1) {
-                var some = $globalTags.data('some');
+            if ((pos = $(this).data('some').indexOf(tag)) !== -1) {
+                var some = $(this).data('some');
                 some.splice(pos, 1);
-                $globalTags.data('some', some);
+                $(this).data('some', some);
             }
-            $globalTags.data('todelete', $globalTags.data('todelete').concat(tag));
+            $(this).data('todelete', $(this).data('todelete').concat(tag));
         },
         onTagClicked: function(e, $tag) {
-            var tag = $globalTags.tagit('tagLabel', $tag);
-            if ((pos = $globalTags.data('some').indexOf(tag)) !== -1) {
-                var some = $globalTags.data('some');
-                console.log(pos);
+            var tag = $(this).tagit('tagLabel', $tag);
+            if ((pos = $(this).data('some').indexOf(tag)) !== -1) {
+                var some = $(this).data('some');
                 some.splice(pos, 1);
-                $globalTags.data('some', some);
-                $globalTags.data('toadd', $globalTags.data('toadd').concat(tag));
+                $(this).data('some', some);
+                $(this).data('toadd', $(this).data('toadd').concat(tag));
                 $tag.css({'opacity': '1'});
             }
         }
     });
-
 
     $('#save_global_tags').click(function(ev) {
         ev.preventDefault();
@@ -127,7 +126,6 @@ $(function($){
             toadd: $globalTags.data('toadd'),
             todelete: $globalTags.data('todelete')
             }, function(data) {
-                console.log(data);
                 overlay.hide();
             });
     });
@@ -287,8 +285,8 @@ $(function($){
                 var allinone = [];
                 var some = new Array(); // pas [] sinon avec concat, ça marche pas bien et pas some = allinone = new Array() ???
 
-                $documents.find('tbody tr').each(function() {
-                    var doc_tags = $(this).data('tags');
+                $documents.find('tbody tr input:checkbox:checked').each(function() {
+                    var doc_tags = $(this).parents('tr').data('tags');
                     allinone.push(doc_tags);
                     some = some.concat(doc_tags);
                 });
@@ -307,6 +305,7 @@ $(function($){
                     return every.indexOf(e) == -1;
                 });
 
+                $globalTags.tagit('removeAll')
                 $globalTags.data('some', some);
                 $globalTags.data('toadd', []);
                 $globalTags.data('todelete', []);
@@ -321,7 +320,7 @@ $(function($){
 
                 break;
             case 'move':
-
+                $('.global_move').show();
                 break;
             case 'delete':
                 if (confirm('Êtes-vous sûr de vouloir supprimer ces documents ?')) {

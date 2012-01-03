@@ -90,7 +90,7 @@ function serve(file, headers, req, res, next) {
         }
 
         headers.forEach(function(header) {
-            res.setHeader(header.name, header.value || null);
+            res.setHeader(header.name, header.value);
         });
 
         res.setHeader('Content-Length', stat.size);

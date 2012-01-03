@@ -1,0 +1,82 @@
+/* main.less
+ * Basic and global styles for page templates
+ * ------------------------------------------------------------- */
+/* HEADER */
+header {
+	margin-bottom: 40px;
+}
+/* CONTENT */
+#content {
+	position: relative;
+	margin-top: 20px;
+}
+#content section h3 {
+	color: @white;
+	.barbackgrounds;
+  .border-radius-top;
+	padding-left: 10px;
+	padding-right: 10px;
+	font-family: 'lato', "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-weight: normal;
+}
+#content section h3 .iconic {
+	float: right;
+	font-size: 1.6em;
+	color: @white;
+}
+#sub_directory ul {
+	list-style: none;
+	.greybackgrounds;
+	li {
+		font-size: 1.1em;
+		padding-bottom: 3px;
+		padding-top: 3px;
+		border-bottom: 1px rgba(0, 0, 0, .1) solid;
+		border-top: 1px rgba(255, 255, 255, .9) solid;
+		i {
+			padding-right: 5px
+		}
+		&:last-child {
+			border-bottom: none; 
+		}
+		&:hover {
+			background-color: @linkColor;
+			a {
+				color: @white;
+			}
+		}
+		&:first-child {
+			border-top: none;
+			border-bottom: none;
+			&:hover {
+				background-color: transparent;
+				a {
+					color: inherit;
+				}
+			} 
+		}
+	}
+	a {
+		display: block;
+		&:hover {
+			text-decoration: none;
+			span {
+				text-decoration: none;
+			}	
+		}
+	}
+}
+#rightbar {
+	position: relative;
+}
+/* FOOTER */
+#footer {
+  margin-top: 80px;
+  border-top: 1px solid black;
+}
+#footer p {
+  margin-bottom: 0;
+  color: rgba(0,0,0,.8)
+}
+
+

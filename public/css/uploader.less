@@ -1,0 +1,96 @@
+/* Usefull stuff */
+#uploader {
+	position: relative;
+}
+#global_uploader {
+	margin-bottom: 0;
+}
+#uploader .iconic {
+	font-size: 2.3em;
+	float: left;
+}
+
+#uploader.over {
+	outline: 3px dashed #999;
+}
+
+#uploader > * {
+	display: inline-block;
+	margin: 0;
+	vertical-align: top;
+	.transition(.2s);
+}
+#uploader label {
+	color: white;
+	font: 18px/32px sans-serif;
+	text-align: center;
+	cursor: pointer;
+	pointer-events: none;
+	float: right;
+	width: inherit;
+	padding-top: 0;
+}
+
+#file {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	opacity: 0;
+	cursor: pointer;
+	z-index: 1;
+}
+.global_uploads .right {
+	margin-top: -2px;
+}
+.global_uploads progress, .global_uploads ul {
+	display: inline-block;
+	height: 8px;
+	list-style: none;
+}
+.global_uploads ul {
+	width: 100%;
+	margin: 0;
+	height: inherit;
+	overflow: hidden;
+	li {
+		padding: 10px;
+		color: white;
+	}
+}
+.global_uploads ul progress {
+	width: 100%;
+	display: block;
+}
+/* Won't work with the webkit declaration, webkit doesn't care */
+.global_uploads progress {
+	background-image: -moz-linear-gradient(top, #C7C7C7 0%, #D7D7D7 100%);
+	.border-radius;
+	border: none;		
+	box-shadow: inset 0 1px #bbb,
+				0 -1px 1px rgba(0, 0, 0, .2);
+}
+
+.global_uploads progress::-webkit-progress-bar {
+	background-image: -webkit-linear-gradient(top, #C7C7C7 0%, #D7D7D7 100%);
+	box-shadow: inset 0 1px #bbb,
+				0 -1px 1px rgba(0, 0, 0, .2);
+}
+
+.global_uploads progress::-webkit-progress-value, .global_uploads progress::-webkit-progress-bar {
+	.border-radius;
+}
+
+.global_uploads progress::-webkit-progress-value {
+	border: 1px solid #63a633;
+	background-image: -webkit-linear-gradient(top, #7BC446 0%, #59AA1E 50%, #60B125 100%);
+	-webkit-transition: .5s;
+}
+
+.global_uploads progress::-moz-progress-bar {
+	border: 1px solid #63a633;
+	.border-radius;
+	background-image: -moz-linear-gradient(top, #7BC446 0%, #59AA1E 50%, #60B125 100%);
+	-moz-transition: .5s;
+}
