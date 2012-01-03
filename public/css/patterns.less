@@ -10,7 +10,14 @@
   right: 0;
   z-index: 10000;
   overflow: visible;
-
+  
+  // Search bt iconic
+	form .iconic {
+		font-size: 2.2em;
+		padding: 2px 4px;
+		height: 28px;
+		margin-top: -2px;
+	}
   // Links get text shadow
   a {
     color: @grayLight;
@@ -601,7 +608,19 @@ ul.tagit li.tagit-choice.remove {
 	background: rgba(20,28,36,.8);
 	z-index: 1;
 	.border-radius;
+	display: none;
+	> div {
+		position: absolute;
+		top: 6px;
+    right: 6px;
+    .content {
+			position: relative;
+    	margin: 20px;
+    	color: #fff;	
+		}	
+	}
 }
+
 
 // PAGE HEADERS
 // ------------

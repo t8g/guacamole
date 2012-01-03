@@ -409,14 +409,14 @@ a:hover {
   background-color: #ececec;
   background-color: #ececec;
   background-repeat: repeat-x;
-  background-image: -khtml-gradient(linear, left top, left bottom, from(white), to(#ececec));
-  background-image: -moz-linear-gradient(top, white, #ececec);
-  background-image: -ms-linear-gradient(top, white, #ececec);
-  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, white), color-stop(100%, #ececec));
-  background-image: -webkit-linear-gradient(top, white, #ececec);
-  background-image: -o-linear-gradient(top, white, #ececec);
-  background-image: linear-gradient(top, white, #ececec);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='white', endColorstr='#ececec', GradientType=0);
+  background-image: -khtml-gradient(linear, left top, left bottom, from(#ffffff), to(#ececec));
+  background-image: -moz-linear-gradient(top, #ffffff, #ececec);
+  background-image: -ms-linear-gradient(top, #ffffff, #ececec);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff), color-stop(100%, #ececec));
+  background-image: -webkit-linear-gradient(top, #ffffff, #ececec);
+  background-image: -o-linear-gradient(top, #ffffff, #ececec);
+  background-image: linear-gradient(top, #ffffff, #ececec);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#ececec', GradientType=0);
   -webkit-box-shadow: inset 0 1px 0 #ffffff;
   -moz-box-shadow: inset 0 1px 0 #ffffff;
   box-shadow: inset 0 1px 0 #ffffff;
@@ -633,8 +633,8 @@ pre {
 }
 @font-face {
   font-family: 'IconicStroke';
-  src: url("../fonts/iconic_stroke.eot");
-  src: local('IconicStroke'), url("../fonts/iconic_stroke.svg#iconic") format('svg'), url("../fonts/iconic_stroke.otf") format('opentype');
+  src: url("/fonts/iconic_stroke.eot");
+  src: local('IconicStroke'), url("/fonts/iconic_stroke.svg#iconic") format('svg'), url("/fonts/iconic_stroke.otf") format('opentype');
 }
 .iconic {
   color: inherit;
@@ -1483,6 +1483,12 @@ table .headerSortUp.purple, table .headerSortDown.purple {
   z-index: 10000;
   overflow: visible;
 }
+.topbar form .iconic {
+  font-size: 2.2em;
+  padding: 2px 4px;
+  height: 28px;
+  margin-top: -2px;
+}
 .topbar a {
   color: #bfbfbf;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
@@ -1986,11 +1992,6 @@ ul.tagit {
   overflow: hidden;
   padding: 7px 14px 2px 14px;
 }
-.global_tags ul.tagit {
-  border: none;
-  background: none;
-  box-shadow: none;
-}
 ul.tagit li {
   display: block;
   float: left;
@@ -2031,7 +2032,7 @@ ul.tagit li.tagit-choice:hover {
 ul.tagit li.tagit-choice:hover:before {
   border-color: transparent #00438a transparent transparent;
 }
-ul.tagit li.tagit-choice .tagit-label {
+ul.tagit li.tagit-choice span.tagit-label {
   cursor: pointer;
   text-decoration: none;
   padding-right: 20px;
@@ -2076,7 +2077,7 @@ ul.tagit li.tagit-choice .ui-icon {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
-  background-color: white;
+  background-color: #ffffff;
 }
 .ui-autocomplete {
   position: absolute;
@@ -2118,6 +2119,17 @@ ul.tagit li.tagit-choice.remove:before {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
+  display: none;
+}
+.overlay > div {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+.overlay > div .content {
+  position: relative;
+  margin: 20px;
+  color: #fff;
 }
 .hero-unit {
   background-color: #f5f5f5;
