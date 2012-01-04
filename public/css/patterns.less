@@ -519,7 +519,7 @@ ul.tagit li.tagit-choice {
 		&:hover:before {
 			border-color: transparent @linkColorHover transparent transparent;
 		}
-		span.tagit-label {
+		.tagit-label {
 			cursor: pointer;
 			text-decoration: none;
 			padding-right: 20px;
@@ -605,19 +605,28 @@ ul.tagit li.tagit-choice.remove {
 	left: 0;
 	width: 100%;
 	min-height: 100%;
-	background: rgba(221,244,251,.8);
+	background: rgba(245,245,245,.8);
 	z-index: 1;
 	.border-radius;
 	display: none;
 	> div {
 		position: absolute;
-		top: 6px;
-    right: 6px;	
+		top: 0;
+    right: 0;	
 	}
 	> div.content {
 		position: relative;
-  	margin: 20px;
-  	color: #fff;	
+  	color: gray;
+  	padding: 10px;
+  	ul.tagit {
+  		background: none;
+  		border-color: transparent;
+  		margin: -10px -10px 14px;
+  	}
+	}
+	.right {
+		margin-top: 4px;
+		margin-right: 4px;
 	}
 }
 
