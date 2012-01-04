@@ -394,7 +394,7 @@ $(function($){
 
         // Show the sub-directories
         $.get('/tags', { subdirsof: path || '/' }, function(data) {
-            var text =  template.subDir
+            var text =  templates.subDir
               , template = Hogan.compile(text)
               , render = data.map(function(dir) {
                     return template.render({
