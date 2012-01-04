@@ -23,9 +23,9 @@ $(function() {
 
     /* Tags functions */
     var tags = {
-        source: function(hasSlash) {
+        source: function() {
             return function(search, showChoices) {
-                $.get('/tags', { startwith: search.term.toLowerCase(), slash: hasSlash }, function(data) {
+                $.get('/tags', { startwith: search.term.toLowerCase() }, function(data) {
                     showChoices(data.map(function(tag) {
                         return tag.label;
                     }));
@@ -92,7 +92,7 @@ $(function() {
 
 
     $tags.tagit({
-        tagSource: tag.source(false),
+        tagSource: tags.source(),
         onTagAdded: function(e, $tag) {
             var url = $.url(location.href) // à remplacer par http://medialize.github.com/URI.js/
               , tag = $tags.tagit('tagLabel', $tag)
@@ -128,27 +128,6 @@ $(function() {
         },
 
         removeConfirmation: true
-    });
-
-    $globalTags.tagit({
-        tagSource: tags.source(false),
-        onTagAdded: tags.added(),
-        onTagRemoved: tags.removed(),
-        onTagClicked: tags.clicked()
-    });
-
-    $('#save_global_tags').on('click', function(e) {
-        e.preventDefault();
-        var overlay = $(this).parents('.overlay');
-        $.post('/documents/batch/tags', {
-            ids: [].map.call($documentCheckboxes.filter(':checked'), function(el, i) {
-                return el.value;
-            }),
-            toadd: $globalTags.data('toadd'),
-            todelete: $globalTags.data('todelete')
-            }, function(data) {
-                overlay.hide();
-            });
     });
 
     /************/
@@ -193,8 +172,7 @@ $(function() {
                 if (i === 0) {
                     $overlayRightbar.show()
                 }
-                var text = templates.upload
-                  , template = Hogan.compile(text)
+                var template = Hogan.compile(templates.upload)
                   , render = template.render({ name: file.name });
 
                 $progress = $overlayRightbar.find('ul').append(render).find('progress');
@@ -249,9 +227,10 @@ $(function() {
     /* Documents */
     /*************/
 
-    var $documentsForm = $documents.next(),
-        $documentsAction = $documentsForm.find('select');
+    var $documentsForm = $documents.next()
+      , $documentsAction = $documentsForm.find('select');
         
+    // @TODO
     $('a').on('click', $documents, function(e) {
         e.preventDefault();
         $.get(this.href, function(data) {
@@ -290,9 +269,10 @@ $(function() {
     $documentsForm.on('submit', function(e) {
         e.preventDefault();
 
-        var action = $documentsAction.val()
+        var $documentChecked = $documentCheckboxes.filter(':checked')
+          , action = $documentsAction.val()
           , url = $documentsForm.attr('action') + action
-          , ids = [].map.call($documentCheckboxes.filter(':checked'), function(el, i) {
+          , ids = [].map.call($documentChecked, function(el, i) {
                     return el.value;
                 });
 
@@ -310,10 +290,34 @@ $(function() {
                 });
                 break;
             case 'tags':
-                var allinone = [];
-                var some = new Array(); // pas [] sinon avec concat, ça marche pas bien et pas some = allinone = new Array() ???
+                //var allinone = [];
+                //var some = new Array(); // pas [] sinon avec concat, ça marche pas bien et pas some = allinone = new Array() ???
+                var allinone = some = [];
+                
 
-                $documents.find('tbody tr input:checkbox:checked').each(function() {
+                var $globalTags = $('.global_tags .tags')
+                $globalTags.tagit({
+                    tagSource: tags.source(),
+                    onTagAdded: tags.added(),
+                    onTagRemoved: tags.removed(),
+                    onTagClicked: tags.clicked()
+                });
+            
+                $('#save_global_tags').on('click', function(e) {
+                    e.preventDefault();
+                    var $overlay = $(this).parents('.overlay');
+                    $.post('/documents/batch/tags', {
+                            ids: [].map.call($documentChecked, function(el, i) {
+                                return el.value;
+                            }),
+                            toadd: $globalTags.data('toadd'),
+                            todelete: $globalTags.data('todelete')
+                        }, function(data) {
+                            $overlay.hide();
+                        });
+                });
+
+                $documentChecked.each(function() {
                     var doc_tags = $(this).parents('tr').data('tags');
                     allinone.push(doc_tags);
                     some = some.concat(doc_tags);
@@ -398,8 +402,7 @@ $(function() {
         $subDirectory.find('li:not(:first-child)').remove();
 
         // Show the breadcrumb
-        var text =  templates.breadcrumb
-          , template = Hogan.compile(text)
+        var template = Hogan.compile(templates.breadcrumb)
           , routes = path.split('/')
           , nbRoutes = routes.length
           , url = ''
@@ -415,9 +418,9 @@ $(function() {
         $breadcrumb.prepend(render)
 
         // Show the sub-directories
+        // @TODO afficher le ".." en premier
         $.get('/tags', { subdirsof: path || '/' }, function(data) {
-            var text =  templates.subDir
-              , template = Hogan.compile(text)
+            var template = Hogan.compile(templates.subDir)
               , render = data.map(function(dir) {
                     return template.render({
                         url: dir.label,
@@ -433,8 +436,7 @@ $(function() {
         // Show the documents
         $.get('/documents', { tags: realTags.join(',') }, function(data) {
             // <a href="/documents/{{id}}/file">{{title}}<img src="/documents/{{id}}/thumbnail" /></a>
-            var text =  templates.document
-              , template = Hogan.compile(text)
+            var template = Hogan.compile(templates.document)
               , nbDocs = data.length
               , render = nbDocs ?
                     data.map(function (doc) {
