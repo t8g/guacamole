@@ -179,10 +179,7 @@ $(function($){
                 if (i === 0) {
                     $overlayRightbar.show()
                 }
-                var text =  '<li>\
-                                <span class="iconic plus-alt"></span>\
-                                <span class="label warning">{{name}}</span>\
-                                <progress max=100></progress>'
+                var text = templates.upload
                   , template = Hogan.compile(text)
                   , render = template.render({ name: file.name });
 
@@ -379,11 +376,7 @@ $(function($){
         $subDirectory.find('li:not(:first-child)').remove();
 
         // Show the breadcrumb
-        var text =  '<li{{^url}} class="active"{{/url}}>\
-                        {{#url}}<a href="{{url}}">{{/url}}\
-                            {{label}}\
-                        {{#url}}</a>{{/url}}\
-                        <span class="divider">/</span>'
+        var text =  templates.breadcrumb
           , template = Hogan.compile(text)
           , routes = path.split('/')
           , nbRoutes = routes.length
@@ -401,7 +394,7 @@ $(function($){
 
         // Show the sub-directories
         $.get('/tags', { subdirsof: path || '/' }, function(data) {
-            var text =  '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'
+            var text =  template.subDir
               , template = Hogan.compile(text)
               , render = data.map(function(dir) {
                     return template.render({
@@ -418,17 +411,7 @@ $(function($){
         // Show the documents
         $.get('/documents', { tags: realTags.join(',') }, function(data) {
             // <a href="/documents/{{id}}/file">{{title}}<img src="/documents/{{id}}/thumbnail" /></a>
-            var text =  '{{#title}}\
-                        <tr data-tags="[{{tags}}]">\
-                            <td><a href="/documents/{{id}}">{{title}}\
-                            <td>{{created_at}}\
-                            <td>{{size}} ko\
-                            <td>{{mime}}\
-                            <td><input type="checkbox" value="{{id}}">\
-                        {{/title}}\
-                        {{^title}}\
-                        <tr><td colspan="5">Aucun fichier\
-                        {{/title}}'
+            var text =  templates.document
               , template = Hogan.compile(text)
               , nbDocs = data.length
               , render = nbDocs ?
@@ -469,3 +452,32 @@ $(function($){
         });
     };
 });
+
+
+/*************/
+/* Templates */
+/*************/
+
+var templates = {
+    upload: '<li>\
+                <span class="iconic plus-alt"></span>\
+                <span class="label warning">{{name}}</span>\
+                <progress max=100></progress>'
+  , breadcrumb: '<li{{^url}} class="active"{{/url}}>\
+                        {{#url}}<a href="{{url}}">{{/url}}\
+                            {{label}}\
+                        {{#url}}</a>{{/url}}\
+                        <span class="divider">/</span>'
+  , document: '{{#title}}\
+                <tr data-tags="[{{tags}}]">\
+                    <td><a href="/documents/{{id}}">{{title}}\
+                    <td>{{created_at}}\
+                    <td>{{size}} ko\
+                    <td>{{mime}}\
+                    <td><input type="checkbox" value="{{id}}">\
+                {{/title}}\
+                {{^title}}\
+                <tr><td colspan="5">Aucun fichier\
+                {{/title}}'
+  , subDir: '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'
+}
