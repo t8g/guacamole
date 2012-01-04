@@ -2883,6 +2883,8 @@ header {
 }
 #sub_directory ul li i {
   padding-right: 5px;
+  font-size: 1.4em;
+  padding-left: 5px;
 }
 #sub_directory ul li:last-child {
   border-bottom: none;
@@ -2916,6 +2918,9 @@ header {
   position: relative;
 }
 /* !! OVERLAY SPECIFIQUE !! */
+.warning .iconic {
+  font-size: 1.8em;
+}
 .document_edit img {
   display: block;
   border: 1px solid #ccc;
