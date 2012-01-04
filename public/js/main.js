@@ -181,7 +181,7 @@ $(function($){
                 }
                 var text =  '<li>\
                                 <span class="iconic plus-alt"></span>\
-                                <span>{{name}}</span>\
+                                <span class="label warning">{{name}}</span>\
                                 <progress max=100></progress>'
                   , template = Hogan.compile(text)
                   , render = template.render({ name: file.name });

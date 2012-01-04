@@ -2032,7 +2032,7 @@ ul.tagit li.tagit-choice:hover {
 ul.tagit li.tagit-choice:hover:before {
   border-color: transparent #00438a transparent transparent;
 }
-ul.tagit li.tagit-choice span.tagit-label {
+ul.tagit li.tagit-choice .tagit-label {
   cursor: pointer;
   text-decoration: none;
   padding-right: 20px;
@@ -2114,7 +2114,7 @@ ul.tagit li.tagit-choice.remove:before {
   left: 0;
   width: 100%;
   min-height: 100%;
-  background: rgba(20, 28, 36, 0.8);
+  background: rgba(245, 245, 245, 0.8);
   z-index: 1;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -2123,13 +2123,22 @@ ul.tagit li.tagit-choice.remove:before {
 }
 .overlay > div {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 0;
+  right: 0;
 }
-.overlay > div .content {
+.overlay > div.content {
   position: relative;
-  margin: 20px;
-  color: #fff;
+  color: gray;
+  padding: 10px;
+}
+.overlay > div.content ul.tagit {
+  background: none;
+  border-color: transparent;
+  margin: -10px -10px 14px;
+}
+.overlay .right {
+  margin-top: 4px;
+  margin-right: 4px;
 }
 .hero-unit {
   background-color: #f5f5f5;
@@ -2951,9 +2960,6 @@ header {
   cursor: pointer;
   z-index: 1;
 }
-.global_uploads .right {
-  margin-top: -2px;
-}
 .global_uploads progress, .global_uploads ul {
   display: inline-block;
   height: 8px;
@@ -2967,7 +2973,7 @@ header {
 }
 .global_uploads ul li {
   padding: 10px;
-  color: white;
+  color: gray;
 }
 .global_uploads ul progress {
   width: 100%;
