@@ -235,11 +235,14 @@ $(function() {
       , $globalTagsTags = $globalTags.find('.tags')
         
     // @TODO
-    $('a').on('click', $documents, function(e) {
+    $documents.find('a').live('click', function(e) {
         e.preventDefault();
         $.get(this.href, function(data) {
             $('.document_edit').show();
-            $('.document_edit .content').text(JSON.stringify(data));
+                var text = templates.editForm
+                  , template = Hogan.compile(text)
+                  , render = template.render(data);
+            $('.document_edit .content').html(render);
         });
     });
 
