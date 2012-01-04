@@ -13,16 +13,16 @@ $(function() {
     /********/
     /* Misc */
     /********/
-    
+
     // close button on overlays
-    $('.hide').on('click', function(e) {
+    $('.hide').live('click', function(e) {
         e.preventDefault();
         $(this).parents('.overlay').attr('data-open', false).hide();
     });
-    
+
     // Twipsy
     $('[data-twipsy]').twipsy();
-    
+
     // Close overlays on escape
     $window.on('keydown', function(e) {
         var $openOverlay = $overlays.filter('[data-open=true]');
@@ -53,7 +53,7 @@ $(function() {
                 var $this = $(this)
                   , tag = $this.tagit('tagLabel', $tag)
                   , pos = $this.data('todelete').indexOf(tag);
-            
+
                 $this.data('some').indexOf(tag) !== -1 ?
                     $tag.css({ opacity: .5 }) :
                     $this.data('toadd', $this.data('toadd').concat(tag));
@@ -68,7 +68,7 @@ $(function() {
             return function(e, $tag) {
                 var $this = $(this)
                   , tag = $this.tagit('tagLabel', $tag);
-    
+
                 // To add
                 var pos = $this.data('toadd').indexOf(tag);
                 if (pos !== -1) {
@@ -76,7 +76,7 @@ $(function() {
                     toadd.splice(pos, 1);
                     $this.data('toadd', toadd);
                 }
-                
+
                 // Some
                 pos = $this.data('some').indexOf(tag);
                 if (pos !== -1) {
@@ -84,7 +84,7 @@ $(function() {
                     some.splice(pos, 1);
                     $this.data('some', some);
                 }
-                
+
                 // To delete
                 $this.data('todelete', $this.data('todelete').concat(tag));
             }
@@ -94,7 +94,7 @@ $(function() {
                 var $this = $(this)
                   , tag = $this.tagit('tagLabel', $tag)
                   , pos = $this.data('some').indexOf(tag)
-                  
+
                 if (pos !== -1) {
                     var some = $this.data('some');
                     some.splice(pos, 1);
@@ -249,13 +249,13 @@ $(function() {
       , $globalTagsTags = $globalTags.find('.tags')
       , $documentEdit = $('.document_edit')
       , $documentEditContent = $documentEdit.find('.content')
-        
+
     // Edit document
     $documents.on('click', 'a', function(e) {
         e.preventDefault();
         $.get(this.href, function(doc) {
             $documentEdit.attr('data-open', true).show();
-            
+
             var template = Hogan.compile(templates.editForm)
               , render = template.render({
                     title: doc.title,
@@ -263,6 +263,8 @@ $(function() {
                     // Size from o to ko
                     size: Math.ceil(doc.resource.size / 1024),
                     mime: doc.resource.mime.split('/')[1],
+                    thumbnail: '/documents/' + doc._id + '/thumbnail',
+                    file: '/documents/' + doc._id + '/file',
                     id: doc._id,
                     // Not those which start with a /
                     tags: doc.tags.filter(function(tag) {
@@ -303,7 +305,7 @@ $(function() {
             $documentsForm.css({ opacity: 1 });
         }
     });
-    
+
     // Initialize the tagits
     $globalTagsTags.tagit({
         tagSource: tags.source(),
@@ -368,7 +370,7 @@ $(function() {
                         return m2;
                     }, []);
                 });
-                
+
                 // create dashed tags
                 some = $.unique(some).filter(function(e) {
                     return every.indexOf(e) == -1;
@@ -460,18 +462,16 @@ $(function() {
         $breadcrumb.prepend(render)
 
         // Show the sub-directories
-        // @TODO afficher le ".." en premier
         $.get('/tags', { subdirsof: path || '/' }, function(data) {
+            // Affichage du '..' en premier
+            if (path) data.unshift({ label: '..', url: path.substring(0, path.lastIndexOf('/')) });
             var template = Hogan.compile(templates.subDir)
               , render = data.map(function(dir) {
                     return template.render({
-                        url: dir.label,
+                        url: dir.url || dir.label,
                         label: dir.label.replace(path + '/', '')
                     });
                 }).join('');
-
-            //if (path) render.before(template.render({ url: '/', label: '..' }));
-
             $subDirectory.append(render);
         });
 
@@ -583,9 +583,9 @@ var templates = {
                   </div>\
                 </fieldset>\
                 <fieldset>\
-                  <label for="vignette">Vignette : </label>\
+                  <label for="apercu">Aperçu : </label>\
                   <div class="input">\
-                    <img src="http://placehold.it/100x100" alt="testbloc_full_img" width="100" height="100">\
+                    <img src="{{thumbnail}}">\
                     <input class="input-file xlarge" id="fileInput" name="fileInput" type="file">\
                   </div>\
                 </fieldset>\
@@ -606,19 +606,19 @@ var templates = {
                     <button class="btn primary left"><span class="iconic arrow-up"></span>Upload</button>\
                     <div class="optioncheckbox">\
                       <input type="checkbox" name="Checkboxes" value="option">\
-                      <span>Regénérer la vignette</span>\
+                      <span>Regénérer l\'aperçu</span>\
                     </div>\
                   </div>\
                 </fieldset>\
                 <fieldset>\
                   <label for="download">Télécharger : </label>\
                   <div class="input">\
-                    <button class="btn primary"><span class="iconic arrow-bottom"></span>Download</button>\
+                    <a class="btn primary" href="{{file}}"><span class="iconic arrow-bottom"></span>Download</a>\
                   </div>\
                 </fieldset>\
                 <fieldset>\
                   <div class="actions">\
-                    <button class="btn danger"><span class="iconic x"></span>Supprimer</button>&nbsp;<button class="btn success"><span class="iconic check"></span>Sauvegarder</button>\
+                    <button class="btn danger"><span class="iconic x"></span>Supprimer</button>&nbsp;<button class="btn success"><span class="iconic check"></span>Sauvegarder</button>&nbsp;<button class="btn danger hide">Annuler</button>\
                   </div>\
                 </fieldset>\
               </form>'
