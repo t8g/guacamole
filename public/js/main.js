@@ -1,4 +1,4 @@
-$(function($){
+$(function() {
     /* jQuery objects */
     var $breadcrumb = $('.breadcrumb')
       , $subDirectory = $('#sub_directory ul')
@@ -9,17 +9,9 @@ $(function($){
       , $documentCheckboxes = $documents.find('tbody input');
 
     // close button on overlays
-    $('.hide').on('click', function(ev) {
-        ev.preventDefault();
+    $('.hide').on('click', function(e) {
+        e.preventDefault();
         $(this).parents('.overlay').hide();
-    });
-
-    $('#documents tbody a').live('click', function(ev) {
-        ev.preventDefault();
-        $.get(this.href, function(data) {
-            $('.document_edit').show();
-            $('.document_edit .content').text(JSON.stringify(data));
-        });
     });
 
     /********/
@@ -27,14 +19,79 @@ $(function($){
     /********/
 // PREVOIR INTERDIR "/"
 // GERER LES TAGS DE MANIERE GLOBALE (AVEC LES OPTIONS : SLASH OU PAS, ...)
+
+    /* Tags functions */
+    var tags = {
+        source: function(hasSlash) {
+            return function(search, showChoices) {
+                $.get('/tags', { startwith: search.term.toLowerCase(), slash: hasSlash }, function(data) {
+                    showChoices(data.map(function(tag) {
+                        return tag.label;
+                    }));
+                });
+            }
+        }
+      , added: function() {
+            return function(e, $tag) {
+                var $this = $(this)
+                  , tag = $this.tagit('tagLabel', $tag)
+                  , pos = $this.data('todelete').indexOf(tag);
+            
+                $this.data('some').indexOf(tag) ?
+                    $tag.css({'opacity': '.5'}) :
+                    $this.data('toadd', $this.data('toadd').concat(tag));
+                if (pos !== -1) {
+                    var todelete = $this.data('todelete');
+                    todelete.splice(pos, 1);
+                    $this.data('todelete', todelete);
+                }
+            }
+        }
+      , removed: function() {
+            return function(e, $tag) {
+                var $this = $(this)
+                  , tag = $this.tagit('tagLabel', $tag);
+    
+                // To add
+                var pos = $this.data('toadd').indexOf(tag);
+                if (pos !== -1) {
+                    var toadd = $this.data('toadd');
+                    toadd.splice(pos, 1);
+                    $this.data('toadd', toadd);
+                }
+                
+                // Some
+                pos = $this.data('some').indexOf(tag);
+                if (pos !== -1) {
+                    var some = $this.data('some');
+                    some.splice(pos, 1);
+                    $this.data('some', some);
+                }
+                
+                // To delete
+                $this.data('todelete', $this.data('todelete').concat(tag));
+            }
+        }
+      , clicked: function() {
+            return function(e, $tag) {
+                var $this = $(this)
+                  , tag = $this.tagit('tagLabel', $tag)
+                  , pos = $this.data('some').indexOf(tag)
+                  
+                if (pos !== -1) {
+                    var some = $this.data('some');
+                    some.splice(pos, 1);
+                    $this.data('some', some);
+                    $this.data('toadd', $this.data('toadd').concat(tag));
+                    $tag.css({'opacity': '1'});
+                }
+            }
+        }
+    }
+
+
     $tags.tagit({
-        tagSource: function(search, showChoices) {
-            $.get('/tags', { startwith: search.term.toLowerCase(), slash: false }, function(data) {
-                showChoices(data.map(function(tag) {
-                    return tag.label;
-                }));
-            });
-        },
+        tagSource: tag.source(false),
         onTagAdded: function(e, $tag) {
             var url = $.url(location.href) // à remplacer par http://medialize.github.com/URI.js/
               , tag = $tags.tagit('tagLabel', $tag)
@@ -73,67 +130,14 @@ $(function($){
     });
 
     $globalTags.tagit({
-        tagSource: function(search, showChoices) {
-            $.get('/tags', { startwith: search.term.toLowerCase(), slash: false }, function(data) {
-                showChoices(data.map(function(tag) {
-                    return tag.label;
-                }));
-            });
-        },
-        onTagAdded: function(e, $tag) {
-            var $this = $(this)
-              , tag = $this.tagit('tagLabel', $tag)
-              , pos = $this.data('todelete').indexOf(tag);
-
-            $this.data('some').indexOf(tag) ?
-                $tag.css({'opacity': '.5'}) :
-                $this.data('toadd', $this.data('toadd').concat(tag));
-            if (pos !== -1) {
-                var todelete = $this.data('todelete');
-                todelete.splice(pos, 1);
-                $this.data('todelete', todelete);
-            }
-        },
-        onTagRemoved: function(e, $tag) {
-            var $this = $(this)
-              , tag = $this.tagit('tagLabel', $tag);
-
-            // To add
-            var pos = $this.data('toadd').indexOf(tag);
-            if (pos !== -1) {
-                var toadd = $this.data('toadd');
-                toadd.splice(pos, 1);
-                $this.data('toadd', toadd);
-            }
-            
-            // Some
-            pos = $this.data('some').indexOf(tag);
-            if (pos !== -1) {
-                var some = $this.data('some');
-                some.splice(pos, 1);
-                $this.data('some', some);
-            }
-            
-            // To delete
-            $this.data('todelete', $this.data('todelete').concat(tag));
-        },
-        onTagClicked: function(e, $tag) {
-            var $this = $(this)
-              , tag = $this.tagit('tagLabel', $tag)
-              , pos = $this.data('some').indexOf(tag)
-              
-            if (pos !== -1) {
-                var some = $this.data('some');
-                some.splice(pos, 1);
-                $this.data('some', some);
-                $this.data('toadd', $this.data('toadd').concat(tag));
-                $tag.css({'opacity': '1'});
-            }
-        }
+        tagSource: tags.source(false),
+        onTagAdded: tags.added(),
+        onTagRemoved: tags.removed(),
+        onTagClicked: tags.clicked()
     });
 
-    $('#save_global_tags').on('click', function(ev) {
-        ev.preventDefault();
+    $('#save_global_tags').on('click', function(e) {
+        e.preventDefault();
         var overlay = $(this).parents('.overlay');
         $.post('/documents/batch/tags', {
             ids: [].map.call($documentCheckboxes.filter(':checked'), function(el, i) {
@@ -225,9 +229,9 @@ $(function($){
     });
     */
 
-    /***********************/
-    /* Add sub-directories */
-    /***********************/
+    /*******************/
+    /* Sub-directories */
+    /*******************/
 
     $('[action="/tags"]').on('submit', function(e) {
         e.preventDefault();
@@ -246,6 +250,14 @@ $(function($){
 
     var $documentsForm = $documents.next(),
         $documentsAction = $documentsForm.find('select');
+        
+    $('a').on('click', $documents, function(e) {
+        e.preventDefault();
+        $.get(this.href, function(data) {
+            $('.document_edit').show();
+            $('.document_edit .content').text(JSON.stringify(data));
+        });
+    });
 
     // Click on the checkboxes
     $documents.on('change', $documentCheckboxes, function(e) {
