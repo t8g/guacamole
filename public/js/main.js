@@ -96,28 +96,37 @@ $(function($){
         },
         onTagRemoved: function(e, $tag) {
             var $this = $(this)
-              , tag = $this.tagit('tagLabel', $tag)
-              , pos = $(this).data('toadd').indexOf(tag);
+              , tag = $this.tagit('tagLabel', $tag);
 
+            // To add
+            var pos = $this.data('toadd').indexOf(tag);
             if (pos !== -1) {
-                var toadd = $(this).data('toadd');
+                var toadd = $this.data('toadd');
                 toadd.splice(pos, 1);
-                $(this).data('toadd', toadd);
+                $this.data('toadd', toadd);
             }
-            if ((pos = $(this).data('some').indexOf(tag)) !== -1) {
-                var some = $(this).data('some');
+            
+            // Some
+            pos = $this.data('some').indexOf(tag);
+            if (pos !== -1) {
+                var some = $this.data('some');
                 some.splice(pos, 1);
-                $(this).data('some', some);
+                $this.data('some', some);
             }
-            $(this).data('todelete', $(this).data('todelete').concat(tag));
+            
+            // To delete
+            $this.data('todelete', $this.data('todelete').concat(tag));
         },
         onTagClicked: function(e, $tag) {
-            var tag = $(this).tagit('tagLabel', $tag);
-            if ((pos = $(this).data('some').indexOf(tag)) !== -1) {
-                var some = $(this).data('some');
+            var $this = $(this)
+              , tag = $this.tagit('tagLabel', $tag)
+              , pos = $this.data('some').indexOf(tag)
+              
+            if (pos !== -1) {
+                var some = $this.data('some');
                 some.splice(pos, 1);
-                $(this).data('some', some);
-                $(this).data('toadd', $(this).data('toadd').concat(tag));
+                $this.data('some', some);
+                $this.data('toadd', $this.data('toadd').concat(tag));
                 $tag.css({'opacity': '1'});
             }
         }
