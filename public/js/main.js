@@ -1,4 +1,4 @@
-$(function($){
+$(function() {
     /* jQuery objects */
     var $breadcrumb = $('.breadcrumb')
       , $subDirectory = $('#sub_directory ul')
@@ -9,37 +9,91 @@ $(function($){
       , $documentCheckboxes = $documents.find('tbody input');
 
     // close button on overlays
-    $('.hide').on('click', function(ev) {
-        ev.preventDefault();
+    $('.hide').on('click', function(e) {
+        e.preventDefault();
         $(this).parents('.overlay').hide();
     });
-
-    $('#documents tbody a').live('click', function(ev) {
-        ev.preventDefault();
-        $.get(this.href, function(data) {
-            $('.document_edit').show();
-
-                var text = templates.editForm
-                  , template = Hogan.compile(text)
-                  , render = template.render(data);
-                  
-            $('.document_edit .content').html(render);
-        });
-    });
+    
+    $('[data-twipsy]').twipsy();
 
     /********/
     /* Tags */
     /********/
 // PREVOIR INTERDIR "/"
 // GERER LES TAGS DE MANIERE GLOBALE (AVEC LES OPTIONS : SLASH OU PAS, ...)
+
+    /* Tags functions */
+    var tags = {
+        source: function() {
+            return function(search, showChoices) {
+                $.get('/tags', { startwith: search.term.toLowerCase() }, function(data) {
+                    showChoices(data.map(function(tag) {
+                        return tag.label;
+                    }));
+                });
+            }
+        }
+      , added: function() {
+            return function(e, $tag) {
+                var $this = $(this)
+                  , tag = $this.tagit('tagLabel', $tag)
+                  , pos = $this.data('todelete').indexOf(tag);
+            
+                $this.data('some').indexOf(tag) !== -1 ?
+                    $tag.css({ opacity: .5 }) :
+                    $this.data('toadd', $this.data('toadd').concat(tag));
+                if (pos !== -1) {
+                    var todelete = $this.data('todelete');
+                    todelete.splice(pos, 1);
+                    $this.data('todelete', todelete);
+                }
+            }
+        }
+      , removed: function() {
+            return function(e, $tag) {
+                var $this = $(this)
+                  , tag = $this.tagit('tagLabel', $tag);
+    
+                // To add
+                var pos = $this.data('toadd').indexOf(tag);
+                if (pos !== -1) {
+                    var toadd = $this.data('toadd');
+                    toadd.splice(pos, 1);
+                    $this.data('toadd', toadd);
+                }
+                
+                // Some
+                pos = $this.data('some').indexOf(tag);
+                if (pos !== -1) {
+                    var some = $this.data('some');
+                    some.splice(pos, 1);
+                    $this.data('some', some);
+                }
+                
+                // To delete
+                $this.data('todelete', $this.data('todelete').concat(tag));
+            }
+        }
+      , clicked: function() {
+            return function(e, $tag) {
+                var $this = $(this)
+                  , tag = $this.tagit('tagLabel', $tag)
+                  , pos = $this.data('some').indexOf(tag)
+                  
+                if (pos !== -1) {
+                    var some = $this.data('some');
+                    some.splice(pos, 1);
+                    $this.data('some', some);
+                    $this.data('toadd', $this.data('toadd').concat(tag));
+                    $tag.css({'opacity': '1'});
+                }
+            }
+        }
+    }
+
+
     $tags.tagit({
-        tagSource: function(search, showChoices) {
-            $.get('/tags', { startwith: search.term.toLowerCase(), slash: false }, function(data) {
-                showChoices(data.map(function(tag) {
-                    return tag.label;
-                }));
-            });
-        },
+        tagSource: tags.source(),
         onTagAdded: function(e, $tag) {
             var url = $.url(location.href) // à remplacer par http://medialize.github.com/URI.js/
               , tag = $tags.tagit('tagLabel', $tag)
@@ -75,73 +129,6 @@ $(function($){
         },
 
         removeConfirmation: true
-    });
-
-    $globalTags.tagit({
-        tagSource: function(search, showChoices) {
-            $.get('/tags', { startwith: search.term.toLowerCase(), slash: false }, function(data) {
-                showChoices(data.map(function(tag) {
-                    return tag.label;
-                }));
-            });
-        },
-        onTagAdded: function(e, $tag) {
-            var $this = $(this)
-              , tag = $this.tagit('tagLabel', $tag)
-              , pos = $this.data('todelete').indexOf(tag);
-
-            // style switch for "some"
-            $this.data('some').indexOf(tag) !== -1 ?
-                $tag.css({'opacity': '.5'}) :
-                $this.data('toadd', $this.data('toadd').concat(tag));
-
-            if (pos !== -1) {
-                var todelete = $this.data('todelete');
-                todelete.splice(pos, 1);
-                $this.data('todelete', todelete);
-            }
-        },
-        onTagRemoved: function(e, $tag) {
-            var $this = $(this)
-              , tag = $this.tagit('tagLabel', $tag)
-              , pos = $(this).data('toadd').indexOf(tag);
-
-            if (pos !== -1) {
-                var toadd = $(this).data('toadd');
-                toadd.splice(pos, 1);
-                $(this).data('toadd', toadd);
-            }
-            if ((pos = $(this).data('some').indexOf(tag)) !== -1) {
-                var some = $(this).data('some');
-                some.splice(pos, 1);
-                $(this).data('some', some);
-            }
-            $(this).data('todelete', $(this).data('todelete').concat(tag));
-        },
-        onTagClicked: function(e, $tag) {
-            var tag = $(this).tagit('tagLabel', $tag);
-            if ((pos = $(this).data('some').indexOf(tag)) !== -1) {
-                var some = $(this).data('some');
-                some.splice(pos, 1);
-                $(this).data('some', some);
-                $(this).data('toadd', $(this).data('toadd').concat(tag));
-                $tag.css({'opacity': '1'});
-            }
-        }
-    });
-
-    $('#save_global_tags').on('click', function(ev) {
-        ev.preventDefault();
-        var overlay = $(this).parents('.overlay');
-        $.post('/documents/batch/tags', {
-            ids: [].map.call($documentCheckboxes.filter(':checked'), function(el, i) {
-                return el.value;
-            }),
-            toadd: $globalTags.data('toadd'),
-            todelete: $globalTags.data('todelete')
-            }, function(data) {
-                overlay.hide();
-            });
     });
 
     /************/
@@ -186,8 +173,7 @@ $(function($){
                 if (i === 0) {
                     $overlayRightbar.show()
                 }
-                var text = templates.upload
-                  , template = Hogan.compile(text)
+                var template = Hogan.compile(templates.upload)
                   , render = template.render({ name: file.name });
 
                 $progress = $overlayRightbar.find('ul').append(render).find('progress');
@@ -223,9 +209,9 @@ $(function($){
     });
     */
 
-    /***********************/
-    /* Add sub-directories */
-    /***********************/
+    /*******************/
+    /* Sub-directories */
+    /*******************/
 
     $('[action="/tags"]').on('submit', function(e) {
         e.preventDefault();
@@ -242,8 +228,19 @@ $(function($){
     /* Documents */
     /*************/
 
-    var $documentsForm = $documents.next(),
-        $documentsAction = $documentsForm.find('select');
+    var $documentsForm = $documents.next()
+      , $documentsAction = $documentsForm.find('select')
+      , $globalTags = $('.global_tags')
+      , $globalTagsTags = $globalTags.find('.tags')
+        
+    // @TODO
+    $('a').on('click', $documents, function(e) {
+        e.preventDefault();
+        $.get(this.href, function(data) {
+            $('.document_edit').show();
+            $('.document_edit .content').text(JSON.stringify(data));
+        });
+    });
 
     // Click on the checkboxes
     $documents.on('change', $documentCheckboxes, function(e) {
@@ -271,13 +268,36 @@ $(function($){
             $documentsForm.css({ opacity: 1 });
         }
     });
+    
+    // Initialize the tagits
+    // @TODO check move
+    $globalTagsTags.tagit({
+        tagSource: tags.source(),
+        onTagAdded: tags.added(),
+        onTagRemoved: tags.removed(),
+        onTagClicked: tags.clicked()
+    });
+
+    // Save
+    // @TODO check move
+    $('#save_global_tags').on('click', function(e) {
+        e.preventDefault();
+        $.post('/documents/batch/tags', {
+                ids: $globalTagsTags.data('ids'),
+                toadd: $globalTagsTags.data('toadd'),
+                todelete: $globalTagsTags.data('todelete')
+            }, function(data) {
+                $globalTags.hide();
+            });
+    });
 
     $documentsForm.on('submit', function(e) {
         e.preventDefault();
 
-        var action = $documentsAction.val()
+        var $documentChecked = $documentCheckboxes.filter(':checked')
+          , action = $documentsAction.val()
           , url = $documentsForm.attr('action') + action
-          , ids = [].map.call($documentCheckboxes.filter(':checked'), function(el, i) {
+          , ids = [].map.call($documentChecked, function(el, i) {
                     return el.value;
                 });
 
@@ -294,47 +314,55 @@ $(function($){
                     }
                 });
                 break;
-            case 'tags':
-                var allinone = [];
-                var some = new Array(); // pas [] sinon avec concat, ça marche pas bien et pas some = allinone = new Array() ???
 
-                $documents.find('tbody tr input:checkbox:checked').each(function() {
+            case 'tags':
+                var allInOne = []
+                  , some = [];
+
+                // Store the tags
+                $documentChecked.each(function() {
                     var doc_tags = $(this).parents('tr').data('tags');
-                    allinone.push(doc_tags);
+                    allInOne.push(doc_tags);
                     some = some.concat(doc_tags);
                 });
 
                 // intersection de plusieurs tableaux
-                var every = allinone.reduce(function(m1, e1, i1) {
+                var every = allInOne.reduce(function(m1, e1, i1) {
                     if (i1 == 0) return e1;
                     return e1.reduce(function(m2, e2) {
                         if (m1.indexOf(e2) !== -1) m2.push(e2);
                         return m2;
                     }, []);
                 });
-
+                
                 // create dashed tags
                 some = $.unique(some).filter(function(e) {
                     return every.indexOf(e) == -1;
                 });
+                console.log(some)
 
-                $globalTags.tagit('removeAll')
-                $globalTags.data('some', some);
-                $globalTags.data('toadd', []);
-                $globalTags.data('todelete', []);
+                // Store the datas
+                $globalTagsTags.tagit('removeAll').data({
+                    ids: ids
+                  , some: some
+                  , toadd: []
+                  , todelete: []
+                });
 
                 // create tags
                 every.concat(some).sort().forEach(function(tag) {
-                    $globalTags.tagit("createTag", tag);
+                    $globalTagsTags.tagit("createTag", tag);
                 });
 
-                $('.global_tags').show();
+                $globalTags.show();
             case 'edit':
 
                 break;
+
             case 'move':
                 $('.global_move').show();
                 break;
+
             case 'delete':
                 if (confirm('Êtes-vous sûr de vouloir supprimer ces documents ?')) {
                     $.post(url, { ids: ids }, function() {
@@ -383,8 +411,7 @@ $(function($){
         $subDirectory.find('li:not(:first-child)').remove();
 
         // Show the breadcrumb
-        var text =  templates.breadcrumb
-          , template = Hogan.compile(text)
+        var template = Hogan.compile(templates.breadcrumb)
           , routes = path.split('/')
           , nbRoutes = routes.length
           , url = ''
@@ -400,15 +427,17 @@ $(function($){
         $breadcrumb.prepend(render)
 
         // Show the sub-directories
+        // @TODO afficher le ".." en premier
         $.get('/tags', { subdirsof: path || '/' }, function(data) {
-            var text =  templates.subDir
-              , template = Hogan.compile(text)
+            var template = Hogan.compile(templates.subDir)
               , render = data.map(function(dir) {
                     return template.render({
                         url: dir.label,
                         label: dir.label.replace(path + '/', '')
                     });
                 }).join('');
+
+            //if (path) render.before(template.render({ url: '/', label: '..' }));
 
             $subDirectory.append(render);
         });
@@ -418,8 +447,7 @@ $(function($){
         // Show the documents
         $.get('/documents', { tags: realTags.join(',') }, function(data) {
             // <a href="/documents/{{id}}/file">{{title}}<img src="/documents/{{id}}/thumbnail" /></a>
-            var text =  templates.document
-              , template = Hogan.compile(text)
+            var template = Hogan.compile(templates.document)
               , nbDocs = data.length
               , render = nbDocs ?
                     data.map(function (doc) {
