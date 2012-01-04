@@ -22,7 +22,7 @@ $(function($){
                 var text = templates.editForm
                   , template = Hogan.compile(text)
                   , render = template.render(data);
-
+                  
             $('.document_edit .content').html(render);
         });
     });
@@ -491,7 +491,73 @@ var templates = {
                 {{/title}}'
   , subDir: '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'
   , editForm: '<form>\
-                <p><label style="display:block;" for="title">Titre : </label><input type="text" name="title" id="title" value={{title}} /></p>\
-                <p><label style="display:block;" for="description">Description : </label><textarea name="description" id="description">{{description}}</textarea></p>\
-                </form>'
+								<fieldset>\
+									<label for="title">Titre : </label>\
+									<div class="input">\
+										<input class="xlarge" type="text" name="title" id="title" value={{title}}>\
+									</div>\
+								</fieldset>\
+								<fieldset>\
+									<label for="description">Description : </label>\
+									<div class="input">\
+										<textarea class="xlarge" name="description" id="description" rows="3">{{description}}</textarea>\
+									</div>\
+								</fieldset>\
+								<fieldset>\
+									<label for="type">Type : </label>\
+									<div class="input">\
+	              		<span class="uneditable-input">pdf</span>\
+	            		</div>\
+								</fieldset>\
+								<fieldset>\
+									<label for="poids">Poids : </label>\
+									<div class="input">\
+	              		<span class="uneditable-input">500 ko</span>\
+	            		</div>\
+								</fieldset>\
+								<fieldset>\
+									<label for="date">Date : </label>\
+									<div class="input">\
+	              		<span class="uneditable-input">04/01/2012</span>\
+	            		</div>\
+								</fieldset>\
+								<fieldset>\
+									<label for="vignette">Vignette : </label>\
+									<div class="input">\
+										<img src="http://placehold.it/100x100" alt="testbloc_full_img" width="100" height="100">\
+										<input class="input-file xlarge" id="fileInput" name="fileInput" type="file">\
+									</div>\
+								</fieldset>\
+								<fieldset>\
+									<label for="tags">Tags : </label>\
+									<div class="input"></div>\
+								</fieldset>\
+								<fieldset>\
+									<label for="repertoire">Répertoire : </label>\
+									<div class="input">\
+										<input class="xlarge" type="text" name="title" id="title" value={{title}} />\
+									</div>\
+								</fieldset>\
+								<fieldset>\
+									<label for="replace">Remplacer : </label>\
+									<div class="input">\
+	            			<button class="btn primary left"><span class="iconic arrow-up"></span>Upload</button>\
+          					<div class="optioncheckbox">\
+                  		<input type="checkbox" name="Checkboxes" value="option">\
+                  		<span>Regénérer la vignette</span>\
+                		</div>\
+	            		</div>\
+	            	</fieldset>\
+								<fieldset>\
+	            		<label for="download">Télécharger : </label>\
+	            		<div class="input">\
+	            			<button class="btn primary"><span class="iconic arrow-bottom"></span>Download</button>\
+	            		</div>\
+	            	</fieldset>\
+								<fieldset>\
+									<div class="actions">\
+	            			<button class="btn danger"><span class="iconic x"></span>Supprimer</button>&nbsp;<button class="btn success"><span class="iconic check"></span>Sauvegarder</button>\
+	          			</div>\
+								</fieldset>\
+							</form>'
 }
