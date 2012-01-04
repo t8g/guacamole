@@ -9,7 +9,7 @@ $(function($){
       , $documentCheckboxes = $documents.find('tbody input');
 
     // close button on overlays
-    $('button.hide').click(function(ev) {
+    $('.hide').on('click', function(ev) {
         ev.preventDefault();
         $(this).parents('.overlay').hide();
     });
@@ -81,18 +81,25 @@ $(function($){
             });
         },
         onTagAdded: function(e, $tag) {
-            var tag = $(this).tagit('tagLabel', $tag);
-            if ($(this).data('some').indexOf(tag) !== -1) $tag.css({'opacity': '.5'});
-            else $(this).data('toadd', $(this).data('toadd').concat(tag));
-            if ((pos = $(this).data('todelete').indexOf(tag)) !== -1) {
-                var todelete = $(this).data('todelete');
+            var $this = $(this)
+              , tag = $this.tagit('tagLabel', $tag)
+              , pos = $this.data('todelete').indexOf(tag);
+
+            $this.data('some').indexOf(tag) ?
+                $tag.css({'opacity': '.5'}) :
+                $this.data('toadd', $this.data('toadd').concat(tag));
+            if (pos !== -1) {
+                var todelete = $this.data('todelete');
                 todelete.splice(pos, 1);
-                $(this).data('todelete', todelete);
+                $this.data('todelete', todelete);
             }
         },
         onTagRemoved: function(e, $tag) {
-            var tag = $(this).tagit('tagLabel', $tag);
-            if ((pos = $(this).data('toadd').indexOf(tag)) !== -1) {
+            var $this = $(this)
+              , tag = $this.tagit('tagLabel', $tag)
+              , pos = $(this).data('toadd').indexOf(tag);
+
+            if (pos !== -1) {
                 var toadd = $(this).data('toadd');
                 toadd.splice(pos, 1);
                 $(this).data('toadd', toadd);
@@ -116,7 +123,7 @@ $(function($){
         }
     });
 
-    $('#save_global_tags').click(function(ev) {
+    $('#save_global_tags').on('click', function(ev) {
         ev.preventDefault();
         var overlay = $(this).parents('.overlay');
         $.post('/documents/batch/tags', {
@@ -212,7 +219,9 @@ $(function($){
     });
     */
 
+    /***********************/
     /* Add sub-directories */
+    /***********************/
 
     $('[action="/tags"]').on('submit', function(e) {
         e.preventDefault();
