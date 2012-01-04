@@ -13,6 +13,8 @@ $(function() {
         e.preventDefault();
         $(this).parents('.overlay').hide();
     });
+    
+    $('[data-twipsy]').twipsy();
 
 
     /********/
@@ -39,7 +41,7 @@ $(function() {
                   , pos = $this.data('todelete').indexOf(tag);
             
                 $this.data('some').indexOf(tag) !== -1 ?
-                    $tag.css({'opacity': '.5'}) :
+                    $tag.css({ opacity: .5 }) :
                     $this.data('toadd', $this.data('toadd').concat(tag));
                 if (pos !== -1) {
                     var todelete = $this.data('todelete');
@@ -228,7 +230,9 @@ $(function() {
     /*************/
 
     var $documentsForm = $documents.next()
-      , $documentsAction = $documentsForm.find('select');
+      , $documentsAction = $documentsForm.find('select')
+      , $globalTags = $('.global_tags')
+      , $globalTagsTags = $globalTags.find('.tags')
         
     // @TODO
     $('a').on('click', $documents, function(e) {
@@ -265,6 +269,28 @@ $(function() {
             $documentsForm.css({ opacity: 1 });
         }
     });
+    
+    // Initialize the tagits
+    // @TODO check move
+    $globalTagsTags.tagit({
+        tagSource: tags.source(),
+        onTagAdded: tags.added(),
+        onTagRemoved: tags.removed(),
+        onTagClicked: tags.clicked()
+    });
+
+    // Save
+    // @TODO check move
+    $('#save_global_tags').on('click', function(e) {
+        e.preventDefault();
+        $.post('/documents/batch/tags', {
+                ids: $globalTagsTags.data('ids'),
+                toadd: $globalTagsTags.data('toadd'),
+                todelete: $globalTagsTags.data('todelete')
+            }, function(data) {
+                $globalTags.hide();
+            });
+    });
 
     $documentsForm.on('submit', function(e) {
         e.preventDefault();
@@ -289,71 +315,55 @@ $(function() {
                     }
                 });
                 break;
+
             case 'tags':
-                //var allinone = [];
-                //var some = new Array(); // pas [] sinon avec concat, ça marche pas bien et pas some = allinone = new Array() ???
-                var allinone = some = [];
-                
+                var allInOne = []
+                  , some = [];
 
-                var $globalTags = $('.global_tags .tags')
-                $globalTags.tagit({
-                    tagSource: tags.source(),
-                    onTagAdded: tags.added(),
-                    onTagRemoved: tags.removed(),
-                    onTagClicked: tags.clicked()
-                });
-            
-                $('#save_global_tags').on('click', function(e) {
-                    e.preventDefault();
-                    var $overlay = $(this).parents('.overlay');
-                    $.post('/documents/batch/tags', {
-                            ids: [].map.call($documentChecked, function(el, i) {
-                                return el.value;
-                            }),
-                            toadd: $globalTags.data('toadd'),
-                            todelete: $globalTags.data('todelete')
-                        }, function(data) {
-                            $overlay.hide();
-                        });
-                });
-
+                // Store the tags
                 $documentChecked.each(function() {
                     var doc_tags = $(this).parents('tr').data('tags');
-                    allinone.push(doc_tags);
+                    allInOne.push(doc_tags);
                     some = some.concat(doc_tags);
                 });
 
                 // intersection de plusieurs tableaux
-                var every = allinone.reduce(function(m1, e1, i1) {
+                var every = allInOne.reduce(function(m1, e1, i1) {
                     if (i1 == 0) return e1;
                     return e1.reduce(function(m2, e2) {
                         if (m1.indexOf(e2) !== -1) m2.push(e2);
                         return m2;
                     }, []);
                 });
-
+                
                 // create dashed tags
                 some = $.unique(some).filter(function(e) {
                     return every.indexOf(e) == -1;
                 });
+                console.log(some)
 
-                $globalTags.tagit('removeAll')
-                $globalTags.data('some', some);
-                $globalTags.data('toadd', []);
-                $globalTags.data('todelete', []);
+                // Store the datas
+                $globalTagsTags.tagit('removeAll').data({
+                    ids: ids
+                  , some: some
+                  , toadd: []
+                  , todelete: []
+                });
 
                 // create tags
                 every.concat(some).sort().forEach(function(tag) {
-                    $globalTags.tagit("createTag", tag);
+                    $globalTagsTags.tagit("createTag", tag);
                 });
 
-                $('.global_tags').show();
+                $globalTags.show();
             case 'edit':
 
                 break;
+
             case 'move':
                 $('.global_move').show();
                 break;
+
             case 'delete':
                 if (confirm('Êtes-vous sûr de vouloir supprimer ces documents ?')) {
                     $.post(url, { ids: ids }, function() {
@@ -428,7 +438,7 @@ $(function() {
                     });
                 }).join('');
 
-            if (path) render.before(template.render({ url: '/', label: '..' }));
+            //if (path) render.before(template.render({ url: '/', label: '..' }));
 
             $subDirectory.append(render);
         });
