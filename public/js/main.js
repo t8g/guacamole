@@ -9,7 +9,7 @@ $(function($){
       , $documentCheckboxes = $documents.find('tbody input');
 
     // close button on overlays
-    $('button.hide').click(function(ev) {
+    $('.hide').on('click', function(ev) {
         ev.preventDefault();
         $(this).parents('.overlay').hide();
     });
@@ -81,18 +81,25 @@ $(function($){
             });
         },
         onTagAdded: function(e, $tag) {
-            var tag = $(this).tagit('tagLabel', $tag);
-            if ($(this).data('some').indexOf(tag) !== -1) $tag.css({'opacity': '.5'});
-            else $(this).data('toadd', $(this).data('toadd').concat(tag));
-            if ((pos = $(this).data('todelete').indexOf(tag)) !== -1) {
-                var todelete = $(this).data('todelete');
+            var $this = $(this)
+              , tag = $this.tagit('tagLabel', $tag)
+              , pos = $this.data('todelete').indexOf(tag);
+
+            $this.data('some').indexOf(tag) ?
+                $tag.css({'opacity': '.5'}) :
+                $this.data('toadd', $this.data('toadd').concat(tag));
+            if (pos !== -1) {
+                var todelete = $this.data('todelete');
                 todelete.splice(pos, 1);
-                $(this).data('todelete', todelete);
+                $this.data('todelete', todelete);
             }
         },
         onTagRemoved: function(e, $tag) {
-            var tag = $(this).tagit('tagLabel', $tag);
-            if ((pos = $(this).data('toadd').indexOf(tag)) !== -1) {
+            var $this = $(this)
+              , tag = $this.tagit('tagLabel', $tag)
+              , pos = $(this).data('toadd').indexOf(tag);
+
+            if (pos !== -1) {
                 var toadd = $(this).data('toadd');
                 toadd.splice(pos, 1);
                 $(this).data('toadd', toadd);
@@ -116,7 +123,7 @@ $(function($){
         }
     });
 
-    $('#save_global_tags').click(function(ev) {
+    $('#save_global_tags').on('click', function(ev) {
         ev.preventDefault();
         var overlay = $(this).parents('.overlay');
         $.post('/documents/batch/tags', {
@@ -172,10 +179,7 @@ $(function($){
                 if (i === 0) {
                     $overlayRightbar.show()
                 }
-                var text =  '<li>\
-                                <span class="iconic plus-alt"></span>\
-                                <span class="label warning">{{name}}</span>\
-                                <progress max=100></progress>'
+                var text = templates.upload
                   , template = Hogan.compile(text)
                   , render = template.render({ name: file.name });
 
@@ -212,7 +216,9 @@ $(function($){
     });
     */
 
+    /***********************/
     /* Add sub-directories */
+    /***********************/
 
     $('[action="/tags"]').on('submit', function(e) {
         e.preventDefault();
@@ -370,11 +376,7 @@ $(function($){
         $subDirectory.find('li:not(:first-child)').remove();
 
         // Show the breadcrumb
-        var text =  '<li{{^url}} class="active"{{/url}}>\
-                        {{#url}}<a href="{{url}}">{{/url}}\
-                            {{label}}\
-                        {{#url}}</a>{{/url}}\
-                        <span class="divider">/</span>'
+        var text =  templates.breadcrumb
           , template = Hogan.compile(text)
           , routes = path.split('/')
           , nbRoutes = routes.length
@@ -392,7 +394,7 @@ $(function($){
 
         // Show the sub-directories
         $.get('/tags', { subdirsof: path || '/' }, function(data) {
-            var text =  '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'
+            var text =  templates.subDir
               , template = Hogan.compile(text)
               , render = data.map(function(dir) {
                     return template.render({
@@ -409,17 +411,7 @@ $(function($){
         // Show the documents
         $.get('/documents', { tags: realTags.join(',') }, function(data) {
             // <a href="/documents/{{id}}/file">{{title}}<img src="/documents/{{id}}/thumbnail" /></a>
-            var text =  '{{#title}}\
-                        <tr data-tags="[{{tags}}]">\
-                            <td><a href="/documents/{{id}}">{{title}}\
-                            <td>{{created_at}}\
-                            <td>{{size}} ko\
-                            <td>{{mime}}\
-                            <td><input type="checkbox" value="{{id}}">\
-                        {{/title}}\
-                        {{^title}}\
-                        <tr><td colspan="5">Aucun fichier\
-                        {{/title}}'
+            var text =  templates.document
               , template = Hogan.compile(text)
               , nbDocs = data.length
               , render = nbDocs ?
@@ -460,3 +452,34 @@ $(function($){
         });
     };
 });
+
+
+/*************/
+/* Templates */
+/* Done with Hogan.js (http://twitter.github.com/hogan.js/) based on mustache (http://mustache.github.com/mustache.5.html) */
+/*************/
+
+
+var templates = {
+    upload: '<li>\
+                <span class="iconic plus-alt"></span>\
+                <span class="label warning">{{name}}</span>\
+                <progress max=100></progress>'
+  , breadcrumb: '<li{{^url}} class="active"{{/url}}>\
+                    {{#url}}<a href="{{url}}">{{/url}}\
+                        {{label}}\
+                    {{#url}}</a>{{/url}}\
+                    <span class="divider">/</span>'
+  , document: '{{#title}}\
+                <tr data-tags="[{{tags}}]">\
+                    <td><a href="/documents/{{id}}">{{title}}\
+                    <td>{{created_at}}\
+                    <td>{{size}} ko\
+                    <td>{{mime}}\
+                    <td><input type="checkbox" value="{{id}}">\
+                {{/title}}\
+                {{^title}}\
+                <tr><td colspan="5">Aucun fichier\
+                {{/title}}'
+  , subDir: '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'
+}
