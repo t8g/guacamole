@@ -456,7 +456,9 @@ $(function($){
 
 /*************/
 /* Templates */
+/* Done with Hogan.js (http://twitter.github.com/hogan.js/) based on mustache (http://mustache.github.com/mustache.5.html) */
 /*************/
+
 
 var templates = {
     upload: '<li>\
@@ -464,10 +466,10 @@ var templates = {
                 <span class="label warning">{{name}}</span>\
                 <progress max=100></progress>'
   , breadcrumb: '<li{{^url}} class="active"{{/url}}>\
-                        {{#url}}<a href="{{url}}">{{/url}}\
-                            {{label}}\
-                        {{#url}}</a>{{/url}}\
-                        <span class="divider">/</span>'
+                    {{#url}}<a href="{{url}}">{{/url}}\
+                        {{label}}\
+                    {{#url}}</a>{{/url}}\
+                    <span class="divider">/</span>'
   , document: '{{#title}}\
                 <tr data-tags="[{{tags}}]">\
                     <td><a href="/documents/{{id}}">{{title}}\
