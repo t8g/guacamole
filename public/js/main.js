@@ -410,6 +410,8 @@ $(function($){
                     });
                 }).join('');
 
+            if (path) render.before(template.render({ url: '/', label: '..' }));
+
             $subDirectory.append(render);
         });
 
