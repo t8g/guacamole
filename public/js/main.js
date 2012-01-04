@@ -14,6 +14,7 @@ $(function() {
         $(this).parents('.overlay').hide();
     });
 
+
     /********/
     /* Tags */
     /********/
@@ -504,4 +505,8 @@ var templates = {
                 <tr><td colspan="5">Aucun fichier\
                 {{/title}}'
   , subDir: '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'
+  , editForm: '<form>\
+                <p><label style="display:block;" for="title">Titre : </label><input type="text" name="title" id="title" value={{title}} /></p>\
+                <p><label style="display:block;" for="description">Description : </label><textarea name="description" id="description">{{description}}</textarea></p>\
+                </form>'
 }

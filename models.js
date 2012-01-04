@@ -133,8 +133,8 @@ function define(mongoose, fn) {
     // thumbnail maker with imagemagick
     Document_Schema.methods.createThumbnail = function createThumbnail(callback) {
         var options = nconf.get('thumbnails:options');
-        // @TODO place this in settings file
-        if (nconf.get('thumbnails:thumbables').indexOf(this.resource.mime) !== -1) {
+
+        if (false){//(nconf.get('thumbnails:thumbables').indexOf(this.resource.mime) !== -1) {
             var _this = this;
             var filename = this.resource.file.split('/').pop();
             im.resize(_.extend(options, {

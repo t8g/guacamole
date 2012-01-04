@@ -2114,7 +2114,7 @@ ul.tagit li.tagit-choice.remove:before {
   left: 0;
   width: 100%;
   min-height: 100%;
-  background: rgba(245, 245, 245, 0.8);
+  background: rgba(245, 245, 245, 0.9);
   z-index: 1;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -2779,7 +2779,7 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
   opacity: 1;
 }
 .label {
-  padding: 1px 3px 2px;
+  padding: 3px 3px 3px;
   font-size: 9.75px;
   font-weight: bold;
   color: #ffffff;
@@ -2801,6 +2801,9 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
 }
 .label.notice {
   background-color: #62cffc;
+}
+.label .iconic {
+  margin-right: 5px;
 }
 /* main.less
  * Basic and global styles for page templates
@@ -2924,7 +2927,7 @@ header {
   margin-bottom: 0;
 }
 #uploader .iconic {
-  font-size: 2.3em;
+  font-size: 1.5em;
   float: left;
 }
 #uploader.over {
@@ -2942,7 +2945,7 @@ header {
 }
 #uploader label {
   color: white;
-  font: 18px/32px sans-serif;
+  font: 18px/18px sans-serif;
   text-align: center;
   cursor: pointer;
   pointer-events: none;
