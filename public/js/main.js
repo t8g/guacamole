@@ -85,9 +85,11 @@ $(function($){
               , tag = $this.tagit('tagLabel', $tag)
               , pos = $this.data('todelete').indexOf(tag);
 
-            $this.data('some').indexOf(tag) ?
+						// style switch for "some"
+            $this.data('some').indexOf(tag) !== -1 ?
                 $tag.css({'opacity': '.5'}) :
                 $this.data('toadd', $this.data('toadd').concat(tag));
+                
             if (pos !== -1) {
                 var todelete = $this.data('todelete');
                 todelete.splice(pos, 1);

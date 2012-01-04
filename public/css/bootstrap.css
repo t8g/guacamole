@@ -2114,7 +2114,7 @@ ul.tagit li.tagit-choice.remove:before {
   left: 0;
   width: 100%;
   min-height: 100%;
-  background: rgba(245, 245, 245, 0.8);
+  background: rgba(245, 245, 245, 0.9);
   z-index: 1;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
