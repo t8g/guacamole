@@ -471,8 +471,9 @@ $(function($){
 
 var templates = {
     upload: '<li>\
-                <span class="iconic plus-alt"></span>\
-                <span class="label warning">{{name}}</span>\
+                <span class="label warning">\
+                	<span class="iconic plus-alt"></span>{{name}}\
+                </span>\
                 <progress max=100></progress>'
   , breadcrumb: '<li{{^url}} class="active"{{/url}}>\
                     {{#url}}<a href="{{url}}">{{/url}}\
