@@ -1,21 +1,35 @@
 $(function() {
     /* jQuery objects */
-    var $breadcrumb = $('.breadcrumb')
+    var $window = $(window)
+      , $breadcrumb = $('.breadcrumb')
       , $subDirectory = $('#sub_directory ul')
-      , $documents = $('#documents')
       , $tags = $('#tags')
-      , $globalTags = $('#global_tags')
+      , $overlays = $('.overlay')
+      , $documents = $('#documents')
       , $masterCheckbox = $documents.find('thead input')
       , $documentCheckboxes = $documents.find('tbody input');
 
+
+    /********/
+    /* Misc */
+    /********/
+    
     // close button on overlays
     $('.hide').on('click', function(e) {
         e.preventDefault();
-        $(this).parents('.overlay').hide();
+        $(this).parents('.overlay').attr('data-open', false).hide();
     });
     
+    // Twipsy
     $('[data-twipsy]').twipsy();
-
+    
+    // Close overlays on escape
+    $window.on('keydown', function(e) {
+        var $openOverlay = $overlays.filter('[data-open=true]');
+        if (e.keyCode === 27 && $openOverlay.length) {
+            $openOverlay.attr('data-open', false).hide();
+        }
+    });
 
     /********/
     /* Tags */
@@ -172,7 +186,7 @@ $(function() {
             xhr.upload.addEventListener('loadstart', function(e) {
                 // First file, show the overlay
                 if (i === 0) {
-                    $overlayRightbar.show()
+                    $overlayRightbar.attr('data-open', true).show();
                 }
                 var template = Hogan.compile(templates.upload)
                   , render = template.render({ name: file.name });
@@ -199,7 +213,7 @@ $(function() {
     });
 
     $overlayRightbar.on('click', 'button.danger', function(e) {
-        $overlayRightbar.hide().find('ul').empty();
+        $overlayRightbar.attr('data-open', false).hide().find('ul').empty();
         changeContent()
     });
 
@@ -233,14 +247,33 @@ $(function() {
       , $documentsAction = $documentsForm.find('select')
       , $globalTags = $('.global_tags')
       , $globalTagsTags = $globalTags.find('.tags')
+      , $documentEdit = $('.document_edit')
+      , $documentEditContent = $documentEdit.find('.content')
         
-    // @TODO
-    $('a').on('click', $documents, function(e) {
-        console.log(e.data)
+    // Edit document
+    $documents.on('click', 'a', function(e) {
         e.preventDefault();
-        $.get(this.href, function(data) {
-            $('.document_edit').show();
-            $('.document_edit .content').text(JSON.stringify(data));
+        $.get(this.href, function(doc) {
+            $documentEdit.attr('data-open', true).show();
+            
+            var template = Hogan.compile(templates.editForm)
+              , render = template.render({
+                    title: doc.title,
+                    created_at: doc.created_at.split('T')[0].split('-').reverse().join('/'),
+                    // Size from o to ko
+                    size: Math.ceil(doc.resource.size / 1024),
+                    mime: doc.resource.mime.split('/')[1],
+                    id: doc._id,
+                    // Not those which start with a /
+                    tags: doc.tags.filter(function(tag) {
+                            return tag[0] !== '/';
+                        }),
+                    // The one which start with a /
+                    repertoire: doc.tags.filter(function(tag) {
+                            return tag[0] === '/';
+                        })[0]
+              });
+            $documentEditContent.html(render);
         });
     });
 
@@ -272,7 +305,6 @@ $(function() {
     });
     
     // Initialize the tagits
-    // @TODO check move
     $globalTagsTags.tagit({
         tagSource: tags.source(),
         onTagAdded: tags.added(),
@@ -281,7 +313,6 @@ $(function() {
     });
 
     // Save
-    // @TODO check move
     $('#save_global_tags').on('click', function(e) {
         e.preventDefault();
         $.post('/documents/batch/tags', {
@@ -289,7 +320,8 @@ $(function() {
                 toadd: $globalTagsTags.data('toadd'),
                 todelete: $globalTagsTags.data('todelete')
             }, function(data) {
-                $globalTags.hide();
+                $globalTags.attr('data-open', false).hide();
+                changeContent();
             });
     });
 
@@ -341,7 +373,6 @@ $(function() {
                 some = $.unique(some).filter(function(e) {
                     return every.indexOf(e) == -1;
                 });
-                console.log(some)
 
                 // Store the datas
                 $globalTagsTags.tagit('removeAll').data({
@@ -356,7 +387,7 @@ $(function() {
                     $globalTagsTags.tagit("createTag", tag);
                 });
 
-                $globalTags.show();
+                $globalTags.attr('data-open', true).show();
             case 'edit':
 
                 break;
@@ -521,73 +552,74 @@ var templates = {
                 {{/title}}'
   , subDir: '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'
   , editForm: '<form>\
-								<fieldset>\
-									<label for="title">Titre : </label>\
-									<div class="input">\
-										<input class="xlarge" type="text" name="title" id="title" value={{title}}>\
-									</div>\
-								</fieldset>\
-								<fieldset>\
-									<label for="description">Description : </label>\
-									<div class="input">\
-										<textarea class="xlarge" name="description" id="description" rows="3">{{description}}</textarea>\
-									</div>\
-								</fieldset>\
-								<fieldset>\
-									<label for="type">Type : </label>\
-									<div class="input">\
-	              		<span class="uneditable-input">pdf</span>\
-	            		</div>\
-								</fieldset>\
-								<fieldset>\
-									<label for="poids">Poids : </label>\
-									<div class="input">\
-	              		<span class="uneditable-input">500 ko</span>\
-	            		</div>\
-								</fieldset>\
-								<fieldset>\
-									<label for="date">Date : </label>\
-									<div class="input">\
-	              		<span class="uneditable-input">04/01/2012</span>\
-	            		</div>\
-								</fieldset>\
-								<fieldset>\
-									<label for="vignette">Vignette : </label>\
-									<div class="input">\
-										<img src="http://placehold.it/100x100" alt="testbloc_full_img" width="100" height="100">\
-										<input class="input-file xlarge" id="fileInput" name="fileInput" type="file">\
-									</div>\
-								</fieldset>\
-								<fieldset>\
-									<label for="tags">Tags : </label>\
-									<div class="input"></div>\
-								</fieldset>\
-								<fieldset>\
-									<label for="repertoire">Répertoire : </label>\
-									<div class="input">\
-										<input class="xlarge" type="text" name="title" id="title" value={{title}} />\
-									</div>\
-								</fieldset>\
-								<fieldset>\
-									<label for="replace">Remplacer : </label>\
-									<div class="input">\
-	            			<button class="btn primary left"><span class="iconic arrow-up"></span>Upload</button>\
-          					<div class="optioncheckbox">\
-                  		<input type="checkbox" name="Checkboxes" value="option">\
-                  		<span>Regénérer la vignette</span>\
-                		</div>\
-	            		</div>\
-	            	</fieldset>\
-								<fieldset>\
-	            		<label for="download">Télécharger : </label>\
-	            		<div class="input">\
-	            			<button class="btn primary"><span class="iconic arrow-bottom"></span>Download</button>\
-	            		</div>\
-	            	</fieldset>\
-								<fieldset>\
-									<div class="actions">\
-	            			<button class="btn danger"><span class="iconic x"></span>Supprimer</button>&nbsp;<button class="btn success"><span class="iconic check"></span>Sauvegarder</button>\
-	          			</div>\
-								</fieldset>\
-							</form>'
+                <fieldset>\
+                  <label for="title">Titre : </label>\
+                  <div class="input">\
+                    <input class="xlarge" type="text" name="title" id="title" value={{title}}>\
+                  </div>\
+                </fieldset>\
+                <fieldset>\
+                  <label for="description">Description : </label>\
+                  <div class="input">\
+                    <textarea class="xlarge" name="description" id="description" rows="3">{{description}}</textarea>\
+                  </div>\
+                </fieldset>\
+                <fieldset>\
+                  <label for="type">Type : </label>\
+                  <div class="input">\
+                    <span class="uneditable-input">{{mime}}</span>\
+                  </div>\
+                </fieldset>\
+                <fieldset>\
+                  <label for="poids">Poids : </label>\
+                  <div class="input">\
+                    <span class="uneditable-input">{{size}} ko</span>\
+                  </div>\
+                </fieldset>\
+                <fieldset>\
+                  <label for="date">Date : </label>\
+                  <div class="input">\
+                    <span class="uneditable-input">{{created_at}}</span>\
+                  </div>\
+                </fieldset>\
+                <fieldset>\
+                  <label for="vignette">Vignette : </label>\
+                  <div class="input">\
+                    <img src="http://placehold.it/100x100" alt="testbloc_full_img" width="100" height="100">\
+                    <input class="input-file xlarge" id="fileInput" name="fileInput" type="file">\
+                  </div>\
+                </fieldset>\
+                <fieldset>\
+                  <label for="tags">Tags : </label>\
+                  <div class="input"></div>\
+                    {{tags}}\
+                </fieldset>\
+                <fieldset>\
+                  <label for="repertoire">Répertoire : </label>\
+                  <div class="input">\
+                    <input class="xlarge" type="text" name="repertoire" id="repertoire" value={{repertoire}} />\
+                  </div>\
+                </fieldset>\
+                <fieldset>\
+                  <label for="replace">Remplacer : </label>\
+                  <div class="input">\
+                    <button class="btn primary left"><span class="iconic arrow-up"></span>Upload</button>\
+                    <div class="optioncheckbox">\
+                      <input type="checkbox" name="Checkboxes" value="option">\
+                      <span>Regénérer la vignette</span>\
+                    </div>\
+                  </div>\
+                </fieldset>\
+                <fieldset>\
+                  <label for="download">Télécharger : </label>\
+                  <div class="input">\
+                    <button class="btn primary"><span class="iconic arrow-bottom"></span>Download</button>\
+                  </div>\
+                </fieldset>\
+                <fieldset>\
+                  <div class="actions">\
+                    <button class="btn danger"><span class="iconic x"></span>Supprimer</button>&nbsp;<button class="btn success"><span class="iconic check"></span>Sauvegarder</button>\
+                  </div>\
+                </fieldset>\
+              </form>'
 }
