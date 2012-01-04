@@ -9,14 +9,14 @@
  */
 
 var express = require('express')
-    ,mongoose = require('mongoose')
-    ,models = require('./models')
-    ,_ = require('underscore')
-    ,fs = require('fs')
-    ,nconf = require('nconf')
-    ,tools = require('./tools')
-    ,async = require('async')
-    ,zip = require('node-native-zip')
+    , mongoose = require('mongoose')
+    , models = require('./models')
+    , _ = require('underscore')
+    , fs = require('fs')
+    , nconf = require('nconf')
+    , tools = require('./tools')
+    , async = require('async')
+    , zip = require('node-native-zip')
     ;
 
 /**

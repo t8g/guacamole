@@ -18,7 +18,12 @@ $(function($){
         ev.preventDefault();
         $.get(this.href, function(data) {
             $('.document_edit').show();
-            $('.document_edit .content').text(JSON.stringify(data));
+
+                var text = templates.editForm
+                  , template = Hogan.compile(text)
+                  , render = template.render(data);
+
+            $('.document_edit .content').html(render);
         });
     });
 
@@ -85,7 +90,7 @@ $(function($){
               , tag = $this.tagit('tagLabel', $tag)
               , pos = $this.data('todelete').indexOf(tag);
 
-            $this.data('some').indexOf(tag) ?
+            $this.data('some').indexOf(tag) !== -1 ?
                 $tag.css({'opacity': '.5'}) :
                 $this.data('toadd', $this.data('toadd').concat(tag));
             if (pos !== -1) {
@@ -483,4 +488,8 @@ var templates = {
                 <tr><td colspan="5">Aucun fichier\
                 {{/title}}'
   , subDir: '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'
+  , editForm: '<form>\
+                <p><label style="display:block;" for="title">Titre : </label><input type="text" name="title" id="title" value={{title}} /></p>\
+                <p><label style="display:block;" for="description">Description : </label><textarea name="description" id="description">{{description}}</textarea></p>\
+                </form>'
 }
