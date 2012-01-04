@@ -236,6 +236,7 @@ $(function() {
         
     // @TODO
     $('a').on('click', $documents, function(e) {
+        console.log(e.data)
         e.preventDefault();
         $.get(this.href, function(data) {
             $('.document_edit').show();
