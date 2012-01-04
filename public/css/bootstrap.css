@@ -2927,7 +2927,7 @@ header {
   margin-bottom: 0;
 }
 #uploader .iconic {
-  font-size: 2.3em;
+  font-size: 1.5em;
   float: left;
 }
 #uploader.over {
@@ -2945,7 +2945,7 @@ header {
 }
 #uploader label {
   color: white;
-  font: 18px/32px sans-serif;
+  font: 18px/18px sans-serif;
   text-align: center;
   cursor: pointer;
   pointer-events: none;
