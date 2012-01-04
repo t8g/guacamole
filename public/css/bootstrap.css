@@ -2126,7 +2126,7 @@ ul.tagit li.tagit-choice.remove:before {
   top: 6px;
   right: 6px;
 }
-.overlay > div .content {
+.overlay > div.content {
   position: relative;
   margin: 20px;
   color: #fff;
