@@ -187,7 +187,7 @@ app.post('/documents', function(req, res) {
 });
 
 /**
- * DELETE documents
+ * DELETE document
  *
  * @param {Object} request
  * @param {Object} response

@@ -41,10 +41,8 @@ $(function() {
     });
 
 
+// @TODO Mettre ailleurs
 $('#filters').submit(function(e) {
-
-
-console.log('ici');
 
     e.preventDefault();
     var form = {}
@@ -60,7 +58,7 @@ console.log('ici');
     url = url.attr('path') + '?' + $.map(query, function(v, k) { return v ? k + '=' + v : null; }).join('&');
 
     history.pushState({}, 'guacamole', url);
-    changeContent(url, false);
+    changeContent();
 });
 
 
@@ -302,14 +300,26 @@ console.log('ici');
                     id: doc._id,
                     // Not those which start with a /
                     tags: doc.tags.filter(function(tag) {
-                            return tag[0] !== '/';
-                        }),
+                        return tag[0] !== '/';
+                    }),
                     // The one which start with a /
                     repertoire: doc.tags.filter(function(tag) {
-                            return tag[0] === '/';
-                        })[0]
+                        return tag[0] === '/';
+                    })[0]
               });
             $documentEditContent.html(render);
+
+            $documentEditContent.find('button.delete').on('click', function(e) {
+
+                e.preventDefault();
+                if (confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) {
+                    $.post('/documents/' + doc._id, { '_method': 'DELETE' }, function(data) {
+                        $documentEdit.overlayToggle(false);
+                        changeContent();
+                    });
+                }
+            });
+
         });
     });
 
@@ -654,7 +664,7 @@ var templates = {
                 </fieldset>\
                 <fieldset>\
                   <div class="actions">\
-                    <button class="btn danger"><span class="iconic x"></span>Supprimer</button>&nbsp;<button class="btn success"><span class="iconic check"></span>Sauvegarder</button>&nbsp;<button class="btn danger hide">Annuler</button>\
+                    <button class="btn danger delete"><span class="iconic x"></span>Supprimer</button>&nbsp;<button class="btn success"><span class="iconic check"></span>Sauvegarder</button>&nbsp;<button class="btn danger hide">Annuler</button>\
                   </div>\
                 </fieldset>\
               </form>'

@@ -113,13 +113,16 @@
 
                 <h3 id="filter_toggle">Filtrez les documents<span class="iconic plus-alt"></span></h3>
                 <form id="filters" action="?" method="get">
-                    <input type="text" name="title" id="filter_input" />
-                    <select name="resource.mime" id="filter_mime">
-                        <option value=""></option>
-                        <option value="image/jpeg">jpeg</option>
-                        <option value="application/pdf">pdf</option>
-                    </select>
-                    <input type="submit" class="btn success" value="Filtrer" />
+                    <p style="margin:5px 0;"><label for="filter_title">Titre : </label><input type="text" name="title" id="filter_title" /></p>
+                    <p style="margin:5px 0;">
+                        <label for="filter_type">Type : </label>
+                        <select name="resource.mime" id="filter_mime">
+                            <option value=""></option>
+                            <option value="image/jpeg">jpeg</option>
+                            <option value="application/pdf">pdf</option>
+                        </select>
+                    </p>
+                    <p style="margin:5px 0;"><label></label><input type="submit" class="btn success" value="Filtrer" /></p>
                 </form>
 
                 <h3>Sous-répertoires<span class="iconic read-more"></span></h3>
