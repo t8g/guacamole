@@ -2,22 +2,31 @@ $(function() {
     /* jQuery objects */
     var $window = $(window)
       , $breadcrumb = $('.breadcrumb')
-      , $subDirectory = $('#sub_directory ul')
+      , $subDirectory = $('#sub_directory')
       , $tags = $('#tags')
       , $overlays = $('.overlay')
       , $documents = $('#documents')
       , $masterCheckbox = $documents.find('thead input')
-      , $documentCheckboxes = $documents.find('tbody input');
-
+      , $documentCheckboxes = $documents.find('tbody input')
+      , $filters = $('#filters');
 
     /********/
     /* Misc */
     /********/
 
+    // hide or show overlay, set data-open (for esc-key close action), scroll
+    $.fn.overlayToggle = function(open) {
+        return this.each(function() {
+            $(this).attr('data-open', open);
+            open ? $(this).show() : $(this).hide();
+            $('html, body').animate({ scrollTop: $('#rightbar').offset().top - 50 }, 500);
+        });
+    };
+
     // close button on overlays
     $('.hide').live('click', function(e) {
         e.preventDefault();
-        $(this).parents('.overlay').attr('data-open', false).hide();
+        $(this).parents('.overlay').overlayToggle(false);
     });
 
     // Twipsy
@@ -27,9 +36,33 @@ $(function() {
     $window.on('keydown', function(e) {
         var $openOverlay = $overlays.filter('[data-open=true]');
         if (e.keyCode === 27 && $openOverlay.length) {
-            $openOverlay.attr('data-open', false).hide();
+            $openOverlay.overlayToggle(false);
         }
     });
+
+
+$('#filters').submit(function(e) {
+
+
+console.log('ici');
+
+    e.preventDefault();
+    var form = {}
+        , url = $.url(location.href)
+        , query = url.data.param.query;
+
+    $.map($(this).serializeArray(), function(n, i){
+        form[n['name']] = n['value'];
+    });
+
+    $.extend(query, form);
+
+    url = url.attr('path') + '?' + $.map(query, function(v, k) { return v ? k + '=' + v : null; }).join('&');
+
+    history.pushState({}, 'guacamole', url);
+    changeContent(url, false);
+});
+
 
     /********/
     /* Tags */
@@ -186,7 +219,7 @@ $(function() {
             xhr.upload.addEventListener('loadstart', function(e) {
                 // First file, show the overlay
                 if (i === 0) {
-                    $overlayRightbar.attr('data-open', true).show();
+                    $overlayRightbar.overlayToggle(true);
                 }
                 var template = Hogan.compile(templates.upload)
                   , render = template.render({ name: file.name });
@@ -213,7 +246,7 @@ $(function() {
     });
 
     $overlayRightbar.on('click', 'button.danger', function(e) {
-        $overlayRightbar.attr('data-open', false).hide().find('ul').empty();
+        $overlayRightbar.overlayToggle(false).find('ul').empty();
         changeContent()
     });
 
@@ -235,6 +268,7 @@ $(function() {
 
         $.post($this.attr('action'), { label: location.pathname.replace(/\/$/, '') + '/' + label }, function() {
             changeContent();
+            $this.find('input').val('');
         });
     });
 
@@ -243,7 +277,7 @@ $(function() {
     /* Documents */
     /*************/
 
-    var $documentsForm = $documents.next()
+    var $documentsForm = $documents.find('tfoot form')
       , $documentsAction = $documentsForm.find('select')
       , $globalTags = $('.global_tags')
       , $globalTagsTags = $globalTags.find('.tags')
@@ -254,7 +288,7 @@ $(function() {
     $documents.on('click', 'a', function(e) {
         e.preventDefault();
         $.get(this.href, function(doc) {
-            $documentEdit.attr('data-open', true).show();
+            $documentEdit.overlayToggle(true);
 
             var template = Hogan.compile(templates.editForm)
               , render = template.render({
@@ -281,15 +315,13 @@ $(function() {
 
     // Click on the checkboxes
     $documents.on('change', $documentCheckboxes, function(e) {
-        var nbCheckbox = $documentCheckboxes.length;
-
+        var nbCheckbox = $documentCheckboxes.length
+            , nbChecked;
         if (nbCheckbox) {
+            nbChecked = $documentCheckboxes.filter(':checked').length;
             $documentsForm.css({ opacity: 1 });
-            if ($documentCheckboxes.filter(':checked').length < nbCheckbox) {
-                $masterCheckbox.prop('checked', false);
-            }
-        } else {
-            $documentsForm.css({ opacity: 0 });
+            if (nbChecked == 0) $documentsForm.css({ opacity: 0 });
+            if (nbChecked < nbCheckbox) $masterCheckbox.prop('checked', false);
         }
     });
 
@@ -322,7 +354,7 @@ $(function() {
                 toadd: $globalTagsTags.data('toadd'),
                 todelete: $globalTagsTags.data('todelete')
             }, function(data) {
-                $globalTags.attr('data-open', false).hide();
+                $globalTags.overlayToggle(false);
                 changeContent();
             });
     });
@@ -389,7 +421,7 @@ $(function() {
                     $globalTagsTags.tagit("createTag", tag);
                 });
 
-                $globalTags.attr('data-open', true).show();
+                $globalTags.overlayToggle(true);
             case 'edit':
 
                 break;
@@ -429,8 +461,10 @@ $(function() {
     window.changeContent = function(url, isPopstate) {
         var url = $.url(url)
             // Remove the last /
-          , path = url.attr('path').replace(/\/$/, '')
-          , tags = url.param('tags') ? url.param('tags').split(',') : [];
+            , path = url.attr('path').replace(/\/$/, '')
+            , tags = url.param('tags') ? url.param('tags').split(',') : []
+            , parameters = url.param()
+            ;
 
         // Add tags from url
         if (isPopstate || !$tags.data('run')) {
@@ -447,17 +481,18 @@ $(function() {
 
         // Show the breadcrumb
         var template = Hogan.compile(templates.breadcrumb)
-          , routes = path.split('/')
-          , nbRoutes = routes.length
-          , url = ''
-          , render = path.split('/').map(function(route, i) {
+            , routes = path.split('/')
+            , nbRoutes = routes.length
+            , url = ''
+            , render = path.split('/').map(function(route, i) {
                 url += route + '/'
                 return template.render({
                     // If i + 1 = nbRoutes, it's the current one
                     url: i + 1 === nbRoutes ? 0 : url,
                     label: route || 'Home'
                 });
-            }).join('');
+            }).join('')
+            , infoFooter = $documents.find('tfoot td:first');
 
         $breadcrumb.prepend(render)
 
@@ -477,8 +512,10 @@ $(function() {
 
         var realTags = tags;
         realTags.push(path || '/');
+        parameters.tags = realTags.join(',');
         // Show the documents
-        $.get('/documents', { tags: realTags.join(',') }, function(data) {
+            $.get('/documents', parameters, function(data) {
+            //$.get('/documents', { 'tags': realTags.join(',') }, function(data) {
             // <a href="/documents/{{id}}/file">{{title}}<img src="/documents/{{id}}/thumbnail" /></a>
             var template = Hogan.compile(templates.document)
               , nbDocs = data.length
@@ -502,6 +539,8 @@ $(function() {
             // Uncheck the $masterCheckbox
             $masterCheckbox.prop('checked', false);
             $documentCheckboxes = $documents.find('tbody').html(render).find('input');
+
+            infoFooter.html(data.length + ' documents trouvés');
 
             // The first time, initialize tablesorter, afterwards, update it
             if (!$documents.data('sorted')) {
@@ -546,9 +585,6 @@ var templates = {
                     <td>{{size}} ko\
                     <td>{{mime}}\
                     <td><input type="checkbox" value="{{id}}">\
-                {{/title}}\
-                {{^title}}\
-                <tr><td colspan="5">Aucun fichier\
                 {{/title}}'
   , subDir: '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'
   , editForm: '<form>\

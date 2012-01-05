@@ -14,7 +14,11 @@
             "files": "./documents/files",
             "thumbs": "./documents/thumbs"
         },
-        "blackhole": "/"
+        "blackhole": "/",
+        "filters": {
+            "resource.mime": "exact",
+            "title": "like"
+        }
     },
 
     "thumbnails": {

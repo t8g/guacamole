@@ -60,7 +60,7 @@
                     <h1>
                         <a href="#"><strong>guacamole</strong><img src="/images/logotype.png" alt="logotype" width="35" height="29" /></a>
                     </h1>
-                    <ul class="nav">
+                    <!--<ul class="nav">
                         <li class="active"><a href="#">Home</a></li>
                         <li><a href="#">Link</a></li>
                         <li><a href="#">Link</a></li>
@@ -74,7 +74,7 @@
                                 <li><a href="#">Another link</a></li>
                             </ul>
                         </li>
-                    </ul>
+                    </ul>-->
                     <form class="pull-left" action="">
                         <input type="text" placeholder="Search" />
                         <button type="submit" class="btn primary iconic magnifying-glass"></button>
@@ -109,9 +109,21 @@
                     </li>
                 </ul>
             </section>
-            <section id="sub_directory" class="grid_4">
+            <section class="grid_4">
+
+                <h3 id="filter_toggle">Filtrez les documents<span class="iconic plus-alt"></span></h3>
+                <form id="filters" action="?" method="get">
+                    <input type="text" name="title" id="filter_input" />
+                    <select name="resource.mime" id="filter_mime">
+                        <option value=""></option>
+                        <option value="image/jpeg">jpeg</option>
+                        <option value="application/pdf">pdf</option>
+                    </select>
+                    <input type="submit" class="btn success" value="Filtrer" />
+                </form>
+
                 <h3>Sous-répertoires<span class="iconic read-more"></span></h3>
-                <ul>
+                <ul id="sub_directory">
                     <li>
                         <form class="pull-left" action="/tags" method="post">
                             <input type="text" name="label" placeholder="créer un répertoire" />
@@ -122,6 +134,8 @@
                     <li><a href="#" title=""><i class="iconic arrow-right-alt"></i><span>Another one</span></a></li>
                     -->
                 </ul>
+
+
             </section>
 
             <section id="rightbar" class="grid_8">
@@ -198,17 +212,24 @@
                         </thead>
                         <tbody>
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <td></td>
+                                <td colspan="4">
+                                    <form action="/documents/batch/" style="text-align:right; opacity: 0;">
+                                        Pour la sélection :
+                                        <select>
+                                            <option value="tags">Editer les tags
+                                            <option value="move">Déplacer
+                                            <option value="download">Télécharger archive
+                                            <option value="delete">Supprimer
+                                        </select>
+                                        <button class="btn">ok</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
-                    <form action="/documents/batch/" style="text-align:right; opacity: 0;">
-                        Pour la sélection :
-                        <select>
-                            <option value="tags">Editer les tags
-                            <option value="move">Déplacer
-                            <option value="download">Télécharger archive
-                            <option value="delete">Supprimer
-                        </select>
-                        <button class="btn">ok</button>
-                    </form>
                 </section>
             </section>
         </section>

@@ -169,8 +169,10 @@ function define(mongoose, fn) {
         var query = {}
             ,blackhole = nconf.get('documents:blackhole')
             ,tags
+            ,_this
             ;
 
+        // tags : impossible de le mettre dans le each ci-dessous, pas de helper $and
         if (tags = req.tags) {
             tags = _.isArray(tags) ? tags : tags.split(',');
             tags = _.map(tags, function(tag) {
@@ -183,10 +185,21 @@ function define(mongoose, fn) {
             });
             query = { $and: tags };
         };
+        _this = this.find(query);
+
+        _.each(req ,function(value, key) {
+
+            // Filtres
+            if (filter = _.find(nconf.get('documents:filters'), function(v, k) { return k == key; })) {
+                if (filter == 'exact') _this.where(key, value);
+                if (filter == 'like') _this.regex(key, new RegExp(value, 'i'));
+            }
+
+        });
 
         // LISTE et QUERY
-        // limit, offset, filtres, sort, search
-        return this.find(query, callback);
+        // limit, offset, sort, search
+        return _this.run(callback);
 
     };
 
