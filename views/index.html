@@ -38,8 +38,7 @@
           // Last range entry is the maximum.
           // Separate ranges by "to" keyword.
           range: [
-            '0px    to 760px  = mobile.min.css',
-            '760px  to 980px  = 720.min.css',
+            '0px    to 980px  = 720.min.css',
             '980px  to 1280px = 960.min.css',
             '1280px to 1600px = 1200.min.css',
             '1600px to 1940px = 1560.min.css',
@@ -113,28 +112,25 @@
 
                 <h3 id="filter_toggle">Filtrez les documents<span class="iconic plus-alt"></span></h3>
                 <form id="filters" action="?" method="get">
-                	<fieldset>
-										<label for="filter_title">Titre : </label><div class="input"><input type="text" name="title" id="filter_title" /></div>
-                  </fieldset>
-                  <fieldset>
-                    <label for="filter_size">Poids : </label><div class="input"><input type="text" name="resource.size" id="filter_size" /></div>
-                  </fieldset>
-                  <fieldset>
-                    <label for="filter_file">Nom fichier : </label><div class="input"><input type="text" name="resource.name" id="filter_file" /></div>
-                  </fieldset>
-                  <fieldset>
-                    <label for="filter_type">Type : </label>
-                    	<div class="input">
-                        <select name="resource.mime" id="filter_mime">
-                            <option value=""></option>
-                            <option value="image/jpeg">jpeg</option>
-                            <option value="application/pdf">pdf</option>
-                        </select>
-                      </div>
-                  </fieldset>
-                  <fieldset>
-                    <label></label><div class="input"><input type="submit" class="btn success" value="Filtrer" /></div>
-                  </fieldset>
+                    <fieldset>
+                        <label for="filter_title">Titre : </label><div class="input"><input type="text" name="title" id="filter_title" /></div>
+                    </fieldset>
+                    <fieldset>
+                        <label for="filter_size">Poids : </label><div class="input"><input type="text" name="resource.size" id="filter_size" /></div>
+                    </fieldset>
+                    <fieldset>
+                        <label for="filter_file">Nom fichier : </label><div class="input"><input type="text" name="resource.name" id="filter_file" /></div>
+                    </fieldset>
+                    <fieldset>
+                        <label for="filter_type">Type : </label>
+                        <div class="input">
+                            <select name="resource.mime" id="filter_mime">
+                            </select>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <div class="input"><input type="submit" class="btn success" value="Filtrer" /></div>
+                    </fieldset>
                 </form>
 
                 <h3>Sous-répertoires<span class="iconic read-more"></span></h3>
