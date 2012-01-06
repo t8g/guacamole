@@ -664,7 +664,7 @@ var templates = {
                 </fieldset>\
                 <fieldset>\
                   <div class="actions">\
-                    <button class="btn danger delete"><span class="iconic x"></span>Supprimer</button>&nbsp;<button class="btn success"><span class="iconic check"></span>Sauvegarder</button>&nbsp;<button class="btn danger hide">Annuler</button>\
+                    <button class="btn danger delete"><span class="iconic x"></span>Supprimer</button>&nbsp;<button class="btn danger hide">Annuler</button>&nbsp;<button class="btn success"><span class="iconic check"></span>Sauvegarder</button>\
                   </div>\
                 </fieldset>\
               </form>'

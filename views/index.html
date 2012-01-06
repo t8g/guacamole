@@ -113,18 +113,28 @@
 
                 <h3 id="filter_toggle">Filtrez les documents<span class="iconic plus-alt"></span></h3>
                 <form id="filters" action="?" method="get">
-                    <p style="margin:5px 0;"><label for="filter_title">Titre : </label><input type="text" name="title" id="filter_title" /></p>
-                    <p style="margin:5px 0;"><label for="filter_size">Poids : </label><input type="text" name="resource.size" id="filter_size" /></p>
-                    <p style="margin:5px 0;"><label for="filter_file">Nom fichier : </label><input type="text" name="resource.name" id="filter_file" /></p>
-                    <p style="margin:5px 0;">
-                        <label for="filter_type">Type : </label>
+                	<fieldset>
+										<label for="filter_title">Titre : </label><div class="input"><input type="text" name="title" id="filter_title" /></div>
+                  </fieldset>
+                  <fieldset>
+                    <label for="filter_size">Poids : </label><div class="input"><input type="text" name="resource.size" id="filter_size" /></div>
+                  </fieldset>
+                  <fieldset>
+                    <label for="filter_file">Nom fichier : </label><div class="input"><input type="text" name="resource.name" id="filter_file" /></div>
+                  </fieldset>
+                  <fieldset>
+                    <label for="filter_type">Type : </label>
+                    	<div class="input">
                         <select name="resource.mime" id="filter_mime">
                             <option value=""></option>
                             <option value="image/jpeg">jpeg</option>
                             <option value="application/pdf">pdf</option>
                         </select>
-                    </p>
-                    <p style="margin:5px 0;"><label></label><input type="submit" class="btn success" value="Filtrer" /></p>
+                      </div>
+                  </fieldset>
+                  <fieldset>
+                    <label></label><div class="input"><input type="submit" class="btn success" value="Filtrer" /></div>
+                  </fieldset>
                 </form>
 
                 <h3>Sous-répertoires<span class="iconic read-more"></span></h3>
@@ -243,7 +253,7 @@
         <div class="inner">
             <div class="container_12">
                 <p class="right"><a href="#">Back to top</a></p>
-                <p>Guacamole © TOOG - 2011</p>
+                <p>Guacamole © TOOG - 2012</p>
             </div>
         </div>
     </footer>
