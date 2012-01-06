@@ -8,7 +8,9 @@ $(function() {
       , $documents = $('#documents')
       , $masterCheckbox = $documents.find('thead input')
       , $documentCheckboxes = $documents.find('tbody input')
-      , $filters = $('#filters');
+      , $filterToggle = $('#filter_toggle')
+      , $filters = $('#filters')
+      , $filterMime = $('#filter_mime');
 
     /********/
     /* Misc */
@@ -39,28 +41,6 @@ $(function() {
             $openOverlay.overlayToggle(false);
         }
     });
-
-
-// @TODO Mettre ailleurs
-$('#filters').submit(function(e) {
-
-    e.preventDefault();
-    var form = {}
-      , url = $.url(location.href)
-      , query = url.data.param.query;
-
-    $.map($(this).serializeArray(), function(n, i){
-        form[n['name']] = n['value'];
-    });
-
-    $.extend(query, form);
-
-    url = url.attr('path') + '?' + $.map(query, function(v, k) { return v ? k + '=' + v : null; }).join('&');
-
-    history.pushState({}, 'guacamole', url);
-    changeContent();
-});
-
 
     /********/
     /* Tags */
@@ -255,6 +235,35 @@ $('#filters').submit(function(e) {
         e.preventDefault();
     });
     */
+
+
+    /************/
+    /* Filters */
+    /************/
+   
+    $filters.on('submit', function(e) {
+        e.preventDefault();
+        var form = {}
+          , url = $.url(location.href)
+          , query = url.data.param.query;
+    
+        $.map($(this).serializeArray(), function(n, i){
+            form[n['name']] = n['value'];
+        });
+    
+        $.extend(query, form);
+    
+        url = url.attr('path') + '?' + $.map(query, function(v, k) { return v ? k + '=' + v : null; }).join('&');
+    
+        history.pushState({}, 'guacamole', url);
+        changeContent();
+    });
+    
+    // Toggle the filters
+    $filterToggle.on('click', function(e) {
+        $filterToggle.find('.iconic').toggleClass('plus-alt minus-alt')
+        $filters.toggleClass('filters_close');
+    });
 
     /*******************/
     /* Sub-directories */
@@ -476,7 +485,7 @@ $('#filters').submit(function(e) {
           , path = url.attr('path').replace(/\/$/, '')
           , tags = url.param('tags') ? url.param('tags').split(',') : []
           , parameters = url.param();
-
+        
         // Add tags from url
         if (isPopstate || !$tags.data('run')) {
             $tags.data('run', false).tagit('removeAll');
@@ -546,15 +555,44 @@ $('#filters').submit(function(e) {
                         });
                     }).join('') :
                     template.render({ empty: true });
-
+                    
             // Uncheck the $masterCheckbox
             $masterCheckbox.prop('checked', false);
             // Render the documents
             $documentCheckboxes = $documents.find('tbody').html(render).find('input');
             // Hide the form
             $documentsForm.css({ opacity: 0 });
-
             infoFooter.html(data.length + ' documents trouvés');
+            
+            // Get the mime type filters
+            var types = []
+              , definedTypes = {}
+              , template = Hogan.compile(templates.filterType)
+            data.map(function (doc) {
+                // If the mime type is not defined
+                if (!definedTypes[doc.resource.mime]) {
+                    definedTypes[doc.resource.mime] = true;
+                    types.push({
+                        mime: doc.resource.mime,
+                        label: doc.resource.mime.split('/')[1]
+                    });
+                }
+            });
+            $filterMime.html(template.render({ types: types }));
+            
+            // Get the defaults filters
+            // parameters is the filters + tags
+            delete parameters.tags;
+            var filters = Object.keys(parameters);
+            // If it contains filters
+            if (filters.length) {
+                // If the form is closed, open it
+                $filters.hasClass('filters_close') && $filterToggle.click();
+                // Add the values to the fields
+                filters.forEach(function(filter) {
+                    $filters.find('[name="' + filter + '"]').val(parameters[filter]);
+                });
+            }
 
             // The first time, initialize tablesorter, afterwards, update it
             if (!$documents.data('sorted')) {
@@ -601,6 +639,10 @@ var templates = {
                     <td><input type="checkbox" value="{{id}}">\
                 {{/title}}'
   , subDir: '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'
+  , filterType: '<option value>\
+                {{#types}}\
+                <option value="{{mime}}">{{label}}\
+                {{/types}}'
   , editForm: '	<form>\
   								<fieldset>\
 	                  <label for="apercu">Aperçu : </label>\
