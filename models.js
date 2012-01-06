@@ -192,6 +192,7 @@ function define(mongoose, fn) {
             // Filtres
             if (filter = _.find(nconf.get('documents:filters'), function(v, k) { return k == key; })) {
 
+                // Tranforme valeur si Number
                 var path = Document_Schema.path(key);
                 if (!(type = (path ? path.instance : false))) {
                     var subpaths = key.split('.');
