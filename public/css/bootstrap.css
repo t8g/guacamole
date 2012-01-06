@@ -2851,6 +2851,9 @@ header {
   font-size: 1.6em;
   color: #ffffff;
 }
+#filter_toggle {
+  cursor: pointer;
+}
 #filters, #sub_directory {
   list-style: none;
   margin: 0 0 18px;

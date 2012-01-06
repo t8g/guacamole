@@ -597,75 +597,77 @@ var templates = {
                     <td><input type="checkbox" value="{{id}}">\
                 {{/title}}'
   , subDir: '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'
-  , editForm: '<form>\
-                <fieldset>\
-                  <label for="title">Titre : </label>\
-                  <div class="input">\
-                    <input class="xlarge" type="text" name="title" id="title" value={{title}}>\
-                  </div>\
-                </fieldset>\
-                <fieldset>\
-                  <label for="description">Description : </label>\
-                  <div class="input">\
-                    <textarea class="xlarge" name="description" id="description" rows="3">{{description}}</textarea>\
-                  </div>\
-                </fieldset>\
-                <fieldset>\
-                  <label for="type">Type : </label>\
-                  <div class="input">\
-                    <span class="uneditable-input">{{mime}}</span>\
-                  </div>\
-                </fieldset>\
-                <fieldset>\
-                  <label for="poids">Poids : </label>\
-                  <div class="input">\
-                    <span class="uneditable-input">{{size}} ko</span>\
-                  </div>\
-                </fieldset>\
-                <fieldset>\
-                  <label for="date">Date : </label>\
-                  <div class="input">\
-                    <span class="uneditable-input">{{created_at}}</span>\
-                  </div>\
-                </fieldset>\
-                <fieldset>\
-                  <label for="apercu">Aperçu : </label>\
-                  <div class="input">\
-                    <img src="{{thumbnail}}">\
-                    <input class="input-file xlarge" id="fileInput" name="fileInput" type="file">\
-                  </div>\
-                </fieldset>\
-                <fieldset>\
-                  <label for="tags">Tags : </label>\
-                  <div class="input"></div>\
-                    {{tags}}\
-                </fieldset>\
-                <fieldset>\
-                  <label for="repertoire">Répertoire : </label>\
-                  <div class="input">\
-                    <input class="xlarge" type="text" name="repertoire" id="repertoire" value={{repertoire}} />\
-                  </div>\
-                </fieldset>\
-                <fieldset>\
-                  <label for="replace">Remplacer : </label>\
-                  <div class="input">\
-                    <button class="btn primary left"><span class="iconic arrow-up"></span>Upload</button>\
-                    <div class="optioncheckbox">\
-                      <input type="checkbox" name="Checkboxes" value="option">\
-                      <span>Regénérer l\'aperçu</span>\
-                    </div>\
-                  </div>\
-                </fieldset>\
-                <fieldset>\
-                  <label for="download">Télécharger : </label>\
-                  <div class="input">\
-                    <a class="btn primary" href="{{file}}"><span class="iconic arrow-bottom"></span>Download</a>\
-                  </div>\
-                </fieldset>\
-                <fieldset>\
-                  <div class="actions">\
-                    <button class="btn danger delete"><span class="iconic x"></span>Supprimer</button>&nbsp;<button class="btn danger hide">Annuler</button>&nbsp;<button class="btn success"><span class="iconic check"></span>Sauvegarder</button>\
-                  </div>\
-                </fieldset>\
-              </form>'
+  , editForm: '	<form>\
+  								<fieldset>\
+	                  <label for="apercu">Aperçu : </label>\
+	                  <div class="input">\
+	                    <img src="{{thumbnail}}">\
+	                    <input class="input-file xlarge" id="fileInput" name="fileInput" type="file">\
+	                  </div>\
+	                </fieldset>\
+  							</form>\
+  							<form>\
+	                <fieldset>\
+	                  <label for="title">Titre : </label>\
+	                  <div class="input">\
+	                    <input class="xlarge" type="text" name="title" id="title" value={{title}}>\
+	                  </div>\
+	                </fieldset>\
+	                <fieldset>\
+	                  <label for="description">Description : </label>\
+	                  <div class="input">\
+	                    <textarea class="xlarge" name="description" id="description" rows="3">{{description}}</textarea>\
+	                  </div>\
+	                </fieldset>\
+	                <fieldset>\
+	                  <label for="type">Type : </label>\
+	                  <div class="input">\
+	                    <span class="uneditable-input">{{mime}}</span>\
+	                  </div>\
+	                </fieldset>\
+	                <fieldset>\
+	                  <label for="poids">Poids : </label>\
+	                  <div class="input">\
+	                    <span class="uneditable-input">{{size}} ko</span>\
+	                  </div>\
+	                </fieldset>\
+	                <fieldset>\
+	                  <label for="date">Date : </label>\
+	                  <div class="input">\
+	                    <span class="uneditable-input">{{created_at}}</span>\
+	                  </div>\
+	                </fieldset>\
+	                <fieldset>\
+	                  <label for="tags">Tags : </label>\
+	                  <div class="input"></div>\
+	                    {{tags}}\
+	                </fieldset>\
+	                <fieldset>\
+	                  <label for="repertoire">Répertoire : </label>\
+	                  <div class="input">\
+	                    <input class="xlarge" type="text" name="repertoire" id="repertoire" value={{repertoire}} />\
+	                  </div>\
+	                </fieldset>\
+	                <fieldset>\
+	                  <label for="replace">Remplacer : </label>\
+	                  <div class="input">\
+	                    <button class="btn primary left"><span class="iconic arrow-up"></span>Upload</button>\
+	                    <div class="optioncheckbox">\
+	                      <input type="checkbox" name="Checkboxes" value="option">\
+	                      <span>Regénérer l\'aperçu</span>\
+	                    </div>\
+	                  </div>\
+	                </fieldset>\
+	                <fieldset>\
+	                  <label for="download">Télécharger : </label>\
+	                  <div class="input">\
+	                    <a class="btn primary" href="{{file}}"><span class="iconic arrow-bottom"></span>Download</a>\
+	                  </div>\
+	                </fieldset>\
+	                <fieldset>\
+	                  <div class="actions">\
+	                    <button class="btn danger delete"><span class="iconic x"></span>Supprimer</button>&nbsp;<button class="btn danger hide">Annuler</button>&nbsp;<button class="btn success"><span class="iconic check"></span>Sauvegarder</button>\
+	                  </div>\
+	                </fieldset>\
+	              </form>'
 }
