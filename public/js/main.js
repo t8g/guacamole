@@ -17,9 +17,9 @@ $(function() {
     // hide or show overlay, set data-open (for esc-key close action), scroll
     $.fn.overlayToggle = function(open) {
         return this.each(function() {
-            $(this).attr('data-open', open);
-            open ? $(this).show() : $(this).hide();
-            $('html, body').animate({ scrollTop: $('#rightbar').offset().top - 50 }, 500);
+            $(this).attr('data-open', open)[open ? 'show' : 'hide']();
+            window.scrollTo(0, $('#rightbar').offset().top - 50);
+            //$('html, body').animate({ scrollTop: $('#rightbar').offset().top - 50 }, 500);
         });
     };
 
@@ -46,8 +46,8 @@ $('#filters').submit(function(e) {
 
     e.preventDefault();
     var form = {}
-        , url = $.url(location.href)
-        , query = url.data.param.query;
+      , url = $.url(location.href)
+      , query = url.data.param.query;
 
     $.map($(this).serializeArray(), function(n, i){
         form[n['name']] = n['value'];
@@ -174,7 +174,8 @@ $('#filters').submit(function(e) {
             }
         },
 
-        removeConfirmation: true
+        removeConfirmation: true,
+        allowSpaces: true
     });
 
     /************/
@@ -353,7 +354,8 @@ $('#filters').submit(function(e) {
         tagSource: tags.source(),
         onTagAdded: tags.added(),
         onTagRemoved: tags.removed(),
-        onTagClicked: tags.clicked()
+        onTagClicked: tags.clicked(),
+        allowSpaces: true
     });
 
     // Save
