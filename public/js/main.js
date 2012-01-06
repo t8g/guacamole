@@ -472,11 +472,10 @@ $('#filters').submit(function(e) {
     // @TODO window ?
     window.changeContent = function(url, isPopstate) {
         var url = $.url(url)
-            // Remove the last /
-            , path = url.attr('path').replace(/\/$/, '')
-            , tags = url.param('tags') ? url.param('tags').split(',') : []
-            , parameters = url.param()
-            ;
+          // Remove the last /
+          , path = url.attr('path').replace(/\/$/, '')
+          , tags = url.param('tags') ? url.param('tags').split(',') : []
+          , parameters = url.param();
 
         // Add tags from url
         if (isPopstate || !$tags.data('run')) {
@@ -493,10 +492,10 @@ $('#filters').submit(function(e) {
 
         // Show the breadcrumb
         var template = Hogan.compile(templates.breadcrumb)
-            , routes = path.split('/')
-            , nbRoutes = routes.length
-            , url = ''
-            , render = path.split('/').map(function(route, i) {
+          , routes = path.split('/')
+          , nbRoutes = routes.length
+          , url = ''
+          , render = path.split('/').map(function(route, i) {
                 url += route + '/'
                 return template.render({
                     // If i + 1 = nbRoutes, it's the current one
@@ -550,7 +549,10 @@ $('#filters').submit(function(e) {
 
             // Uncheck the $masterCheckbox
             $masterCheckbox.prop('checked', false);
+            // Render the documents
             $documentCheckboxes = $documents.find('tbody').html(render).find('input');
+            // Hide the form
+            $documentsForm.css({ opacity: 0 });
 
             infoFooter.html(data.length + ' documents trouvés');
 
