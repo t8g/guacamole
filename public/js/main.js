@@ -20,7 +20,7 @@ $(function() {
     $.fn.overlayToggle = function(open) {
         return this.each(function() {
             $(this).attr('data-open', open)[open ? 'show' : 'hide']();
-            window.scrollTo(0, $('#rightbar').offset().top - 50);
+            window.scrollTo(0, $filterToggle.offset().top - 50);
             //$('html, body').animate({ scrollTop: $('#rightbar').offset().top - 50 }, 500);
         });
     };
@@ -166,7 +166,8 @@ $(function() {
     var $uploader = $('#uploader')
       , $file = $('#file')
       , $rightbar = $('#rightbar')
-      , $overlayRightbar = $rightbar.find('.global_uploads');
+      , $overlayRightbar = $rightbar.find('.global_uploads')
+      , $editTags = $('.edit_tags');
 
     $file.on('click', function(e) {
         if ('webkitNotifications' in window && webkitNotifications.checkPermission() !== 0)
@@ -215,8 +216,37 @@ $(function() {
                 }
             }, false);
 
+            // Store the ids
+            var ids = [];
+            xhr.addEventListener('readystatechange', function(e) {
+                if (this.readyState === 4 && this.status === 200) {
+                    var response = JSON.parse(xhr.response);
+                    ids.push(response._id);
+                    if (ids.length === files.length) {
+                        // Flush the result and update the table
+                        $file.val('');
+                        changeContent();
+                    }
+                }
+            }, false);
+
             // Send the form
             xhr.send(formData);
+
+            // Create the tags
+            $editTags.on('click', function(e) {
+                e.preventDefault();
+        
+                $globalTagsTags.tagit('removeAll').data({
+                    ids: ids
+                  , some: []
+                  , toadd: []
+                  , todelete: []
+                });
+                
+                $overlayRightbar.overlayToggle(false)
+                $globalTags.overlayToggle(true);
+            });
         });
     });
 
@@ -226,7 +256,7 @@ $(function() {
 
     $overlayRightbar.on('click', 'button.danger', function(e) {
         $overlayRightbar.overlayToggle(false).find('ul').empty();
-        changeContent()
+        changeContent();
     });
 
     /*
@@ -235,7 +265,6 @@ $(function() {
         e.preventDefault();
     });
     */
-
 
     /************/
     /* Filters */
