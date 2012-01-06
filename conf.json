@@ -17,9 +17,7 @@
         "blackhole": "/",
         "filters": {
             "resource.mime": "exact",
-            "title": "like",
-            "resource.size": "exact",
-            "resource.name": "like"
+            "title": "like"
         }
     },
 
@@ -34,9 +32,7 @@
             "*": "unknown.png",
             "video/x-msvideo": "video.png",
             "application/x-bzip2": "zip.png",
-            "application/zip": "zip.png",
-            "application/pdf": "pdf.png",
-            "application/javascript": "pdf.png"
+            "application/pdf": "pdf.png"
         },
         "default-path": "public/images/"
     }

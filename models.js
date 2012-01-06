@@ -42,7 +42,7 @@ function define(mongoose, fn) {
         },
         'description': String,
         'resource': {
-            type: { name: String, file: String, size: Number },
+            type: { name: String, file: String },
             set: function(v) {
 
                 // update file
@@ -134,7 +134,7 @@ function define(mongoose, fn) {
     Document_Schema.methods.createThumbnail = function createThumbnail(callback) {
         var options = nconf.get('thumbnails:options');
 
-        if (nconf.get('thumbnails:thumbables').indexOf(this.resource.mime) !== -1) {
+        if (false){//(nconf.get('thumbnails:thumbables').indexOf(this.resource.mime) !== -1) {
             var _this = this;
             var filename = this.resource.file.split('/').pop();
             im.resize(_.extend(options, {
@@ -191,15 +191,6 @@ function define(mongoose, fn) {
 
             // Filtres
             if (filter = _.find(nconf.get('documents:filters'), function(v, k) { return k == key; })) {
-
-                var path = Document_Schema.path(key);
-                if (!(type = (path ? path.instance : false))) {
-                    var subpaths = key.split('.');
-                    var type = Document_Schema.path(subpaths[0]).options.type[subpaths[1]] || 'String';
-                    type = (type == Number) ? 'Number' : 'String';
-                }
-                if (type == 'Number') value = parseFloat(value);
-
                 if (filter == 'exact') _this.where(key, value);
                 if (filter == 'like') _this.regex(key, new RegExp(value, 'i'));
             }
