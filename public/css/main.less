@@ -24,9 +24,24 @@ header {
 	font-size: 1.6em;
 	color: @white;
 }
-#sub_directory ul {
+#filters, #sub_directory {
 	list-style: none;
 	.greybackgrounds;
+}
+#filters {
+	.input {
+		margin-left: 90px;
+	}
+	label {
+		width: 74px;
+	}
+	fieldset {
+		margin-bottom: 0;
+		padding-bottom: 0;
+		padding-top: 0.7em;
+	}
+}
+#sub_directory {
 	li {
 		font-size: 1.1em;
 		padding-bottom: 3px;

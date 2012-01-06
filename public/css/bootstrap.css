@@ -2851,12 +2851,7 @@ header {
   font-size: 1.6em;
   color: #ffffff;
 }
-
-h3#filter_toggle {
-  cursor: pointer;
-}
-
-ul#sub_directory, form#filters {
+#filters, #sub_directory {
   list-style: none;
   margin: 0 0 18px;
   padding: 7px 14px;
@@ -2879,44 +2874,55 @@ ul#sub_directory, form#filters {
   box-shadow: inset 0 1px 0 #ffffff;
   overflow: hidden;
 }
-ul#sub_directory li {
+#filters .input {
+  margin-left: 90px;
+}
+#filters label {
+  width: 74px;
+}
+#filters fieldset {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  padding-top: 0.7em;
+}
+#sub_directory li {
   font-size: 1.1em;
   padding-bottom: 3px;
   padding-top: 3px;
   border-bottom: 1px rgba(0, 0, 0, 0.1) solid;
   border-top: 1px rgba(255, 255, 255, 0.9) solid;
 }
-ul#sub_directory li i {
+#sub_directory li i {
   padding-right: 5px;
   font-size: 1.4em;
   padding-left: 5px;
 }
-ul#sub_directory li:last-child {
+#sub_directory li:last-child {
   border-bottom: none;
 }
-ul#sub_directory li:hover {
+#sub_directory li:hover {
   background-color: #0069d6;
 }
-ul#sub_directory li:hover a {
+#sub_directory li:hover a {
   color: #ffffff;
 }
-ul#sub_directory li:first-child {
+#sub_directory li:first-child {
   border-top: none;
   border-bottom: none;
 }
-ul#sub_directory li:first-child:hover {
+#sub_directory li:first-child:hover {
   background-color: transparent;
 }
-ul#sub_directory li:first-child:hover a {
+#sub_directory li:first-child:hover a {
   color: inherit;
 }
-ul#sub_directory a {
+#sub_directory a {
   display: block;
 }
-ul#sub_directory a:hover {
+#sub_directory a:hover {
   text-decoration: none;
 }
-ul#sub_directory a:hover span {
+#sub_directory a:hover span {
   text-decoration: none;
 }
 #rightbar {
