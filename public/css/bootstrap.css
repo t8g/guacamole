@@ -2888,6 +2888,11 @@ header {
   padding-bottom: 0;
   padding-top: 0.7em;
 }
+#filters.filters_close {
+  height: 0;
+  padding: 0;
+  border: none;
+}
 #sub_directory li {
   font-size: 1.1em;
   padding-bottom: 3px;
