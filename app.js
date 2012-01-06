@@ -327,7 +327,6 @@ app.post('/documents/batch/tags', function(req, res) {
                 doc.save(fn);
             },
             function(err) {
-                console.log('fin');
                 return res.respond(err || {}, err ? 500 : 200);
             }
         );
