@@ -1148,7 +1148,7 @@ textarea[readonly] {
   background: #f5f5f5;
   margin-top: 18px;
   margin-bottom: 18px;
-  padding: 17px 20px 18px 150px;
+  padding: 17px 20px 0 150px;
   border-top: 1px solid #ddd;
   -webkit-border-radius: 0 0 3px 3px;
   -moz-border-radius: 0 0 3px 3px;
@@ -2951,6 +2951,9 @@ header {
   margin-left: 10px;
   float: left;
   padding-top: 6px;
+}
+.document_edit #editfiles .actions {
+  padding: 0;
 }
 /* FOOTER */
 #footer {
