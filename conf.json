@@ -32,11 +32,11 @@
         "thumbables": ["image/jpeg", "image/png", "application/pdf"],
         "default": {
             "*": "filetype_unknown.png",
-            "video/x-msvideo": "video.png",
-            "application/x-bzip2": "zip.png",
-            "application/zip": "zip.png",
-            "application/pdf": "pdf.png",
-            "application/javascript": "pdf.png"
+            "video/x-msvideo": "typefile_wmv.png",
+            "application/x-bzip2": "typefile_zip.png",
+            "application/zip": "typefile_zip.png",
+            "application/pdf": "typefile_pdf.png",
+            "application/javascript": "typefile_js.png"
         },
         "default-path": "public/images/"
     }
