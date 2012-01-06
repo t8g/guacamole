@@ -31,7 +31,7 @@
         },
         "thumbables": ["image/jpeg", "image/png", "application/pdf"],
         "default": {
-            "*": "unknown.png",
+            "*": "filetype_unknown.png",
             "video/x-msvideo": "video.png",
             "application/x-bzip2": "zip.png",
             "application/zip": "zip.png",
