@@ -236,12 +236,12 @@ input:invalid, textarea:invalid {
   background-color: #f0dddd;
 }
 ::-moz-selection {
-  background: #EE7F00;
+  background: #0392D8;
   color: #fff;
   text-shadow: none;
 }
 ::selection {
-  background: #EE7F00;
+  background: #0392D8;
   color: #fff;
   text-shadow: none;
 }
@@ -362,6 +362,13 @@ h6 {
 /* Mixins.less
  * Snippets of reusable CSS to develop faster and keep code readable
  * ----------------------------------------------------------------- */
+.user-select {
+  -ms-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
 html, body {
   background-color: #ffffff;
 }
@@ -2853,6 +2860,11 @@ header {
 }
 #filter_toggle {
   cursor: pointer;
+  -ms-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 #filters, #sub_directory {
   list-style: none;
