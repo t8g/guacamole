@@ -362,10 +362,6 @@ $(function() {
                     thumbnail: '/documents/' + doc._id + '/thumbnail',
                     file: '/documents/' + doc._id + '/file',
                     id: doc._id,
-                    // Not those which start with a /
-                    tags: doc.tags.filter(function(tag) {
-                        return tag[0] !== '/';
-                    }),
                     // The one which start with a /
                     repertoire: doc.tags.filter(function(tag) {
                         return tag[0] === '/';
@@ -373,6 +369,28 @@ $(function() {
                     extra: doc.extra || ''
               });
             $documentEditContent.html(render);
+            
+            // Tagit
+            var $editTag = $documentEditContent.find('.edit-tags').tagit({
+                itemName: 'tags',
+                fieldName: '',
+                allowSpaces: true
+            });
+            
+            // Default tags
+            doc.tags.forEach(function(tag) {
+                // Create the tag
+                if (tag.charAt(0) !== '/') {
+                    $editTag.tagit('createTag', tag);
+                // Add the directory
+                } else {
+                    $('<input>').attr({
+                        type: 'hidden',
+                        name: 'tags[][]',
+                        value: tag
+                    }).insertAfter($editTag);
+                }
+            });
 
             // dir selector
             var myplugin = new $.dirSelector($documentEditContent.find('ul.dir_select'), {
@@ -750,8 +768,7 @@ var templates = {
 	                </fieldset>\
 	                <fieldset>\
 	                  <label for="tags">Tags : </label>\
-	                  <div class="input"></div>\
-	                    {{tags}}\
+	                    <ul class="edit-tags"></ul>\
 	                </fieldset>\
 	                <fieldset>\
 	                  <label for="repertoire">Répertoire : </label>\
@@ -768,7 +785,9 @@ var templates = {
                     </fieldset>\
                     <fieldset>\
 	                  <div class="actions">\
-	                    <button class="btn danger delete"><span class="iconic trash"></span>Supprimer</button>&nbsp;<button class="btn danger hide"><span class="iconic x"></span>Annuler</button>&nbsp;<button class="btn success"><span class="iconic check"></span>Sauvegarder</button>\
+	                    <button type="button" class="btn danger delete"><span class="iconic trash"></span>Supprimer</button>\
+	                    <button type="button" class="btn danger hide"><span class="iconic x"></span>Annuler</button>\
+	                    <button class="btn success"><span class="iconic check"></span>Sauvegarder</button>\
 	                  </div>\
 	                </fieldset>\
 	              </form>\
