@@ -8,6 +8,22 @@
  * Module dependencies
  */
 
+// var cluster = require('cluster')
+//     , http = require('http')
+//     , numCPUs = require('os').cpus().length
+//     ;
+
+// if (cluster.isMaster) {
+//     // Fork workers.
+//     for (var i = 0; i < numCPUs; i++) {
+//         cluster.fork();
+//     }
+
+//     cluster.on('death', function(worker) {
+//         console.log('worker ' + worker.pid + ' died');
+//     });
+// } else {
+
 var express = require('express')
     , mongoose = require('mongoose')
     , models = require('./models')
@@ -150,7 +166,8 @@ app.get('/documents', function(req, res) {
 
 app.get('/documents/:id', function(req, res) {
     Document.findById(req.params.id, function(err, doc) {
-        res.respond(err || doc, err ? 500 : ( doc ? 200 : 404 ));
+        //console.log(doc.toJSON2());
+        res.respond(err || doc.toJSON2(), err ? 500 : ( doc ? 200 : 404 ));
     });
 });
 
@@ -206,6 +223,19 @@ app.del('/documents/:id', function(req, res) {
 app.put('/documents/:id', function(req, res) {
 
     Document.findById(req.params.id, function(err, doc) {
+        if (err) return res.respond(err, 500);
+
+        // @TODO upload pj + regeneration thumb (option)
+        // @TODO upload thumb
+
+        doc.set(req.body);
+        doc.save(function(err) {
+            res.respond(err || doc, err ? 500 : 200);
+        });
+
+    });
+
+/*
 
 
 // T'es en train de bosser ici !!!
@@ -234,7 +264,7 @@ app.put('/documents/:id', function(req, res) {
             })
         }
     });
-
+*/
 });
 
 /**
@@ -321,8 +351,8 @@ app.post('/documents/batch/tags', function(req, res) {
             docs,
             function(doc, fn) {
                 var tags = doc.tags;
-                tags = _.difference(tags, req.body.todelete);
-                tags = _.union(tags, req.body.toadd);
+                if (req.body.todelete) tags = _.difference(tags, req.body.todelete);
+                if (req.body.toadd) tags = _.union(tags, req.body.toadd);
                 doc.tags = tags;
                 doc.save(fn);
             },
@@ -475,6 +505,6 @@ app.get('/*', function(req, res, next) {
     else next();
 });
 
-
 app.listen(nconf.get('application:port'));
-console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+//}
+//console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

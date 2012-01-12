@@ -20,7 +20,8 @@
             "title": "like",
             "resource.size": "exact",
             "resource.name": "like"
-        }
+        },
+        "index": ["title", "description"]
     },
 
     "thumbnails": {

@@ -10,7 +10,11 @@ $(function() {
       , $documentCheckboxes = $documents.find('tbody input')
       , $filterToggle = $('#filter_toggle')
       , $filters = $('#filters')
-      , $filterMime = $('#filter_mime');
+      , $filterMime = $('#filter_mime')
+      , $searchForms = $('.search_form')
+      , $searchInfos = $('#search_informations')
+      , $navigationInfos = $('#navigation_docs')
+      ;
 
     /********/
     /* Misc */
@@ -236,14 +240,14 @@ $(function() {
             // Create the tags
             $editTags.on('click', function(e) {
                 e.preventDefault();
-        
+
                 $globalTagsTags.tagit('removeAll').data({
                     ids: ids
                   , some: []
                   , toadd: []
                   , todelete: []
                 });
-                
+
                 $overlayRightbar.overlayToggle(false)
                 $globalTags.overlayToggle(true);
             });
@@ -269,25 +273,25 @@ $(function() {
     /************/
     /* Filters */
     /************/
-   
+
     $filters.on('submit', function(e) {
         e.preventDefault();
         var form = {}
           , url = $.url(location.href)
           , query = url.data.param.query;
-    
+
         $.map($(this).serializeArray(), function(n, i){
             form[n['name']] = n['value'];
         });
-    
+
         $.extend(query, form);
-    
+
         url = url.attr('path') + '?' + $.map(query, function(v, k) { return v ? k + '=' + v : null; }).join('&');
-    
+
         history.pushState({}, 'guacamole', url);
         changeContent();
     });
-    
+
     // Toggle the filters
     $filterToggle.on('click', function(e) {
         $filterToggle.find('.iconic').toggleClass('plus-alt minus-alt')
@@ -309,6 +313,24 @@ $(function() {
         });
     });
 
+    /*************/
+    /* Search    */
+    /*************/
+
+    $searchForms.on('submit', function(ev) {
+        ev.preventDefault();
+        var $this = $(this)
+            , query = $this.find('input:text').val()
+            , url = query ? '/?search=' + query : '/';
+        history.pushState({}, 'guacamole', url);
+        changeContent();
+    });
+
+    $searchInfos.find('button.danger').on('click', function(ev) {
+        ev.preventDefault();
+        history.pushState({}, 'guacamole', '/');
+        changeContent();
+    });
 
     /*************/
     /* Documents */
@@ -330,6 +352,7 @@ $(function() {
             var template = Hogan.compile(templates.editForm)
               , render = template.render({
                     title: doc.title,
+                    description: doc.description || '',
                     created_at: doc.created_at.split('T')[0].split('-').reverse().join('/'),
                     // Size from o to ko
                     size: Math.ceil(doc.resource.size / 1024),
@@ -344,10 +367,46 @@ $(function() {
                     // The one which start with a /
                     repertoire: doc.tags.filter(function(tag) {
                         return tag[0] === '/';
-                    })[0]
+                    })[0],
+                    extra: doc.extra || ''
               });
             $documentEditContent.html(render);
 
+        var myplugin = new $.dirSelector($documentEditContent.find('ul.dir_select'), {
+            dir: '/rep1/rep1_1'
+        });
+
+//$documentEditContent.find('.dir_select').dirSelector();
+//console.log($documentEditContent.find('.dir_select'));
+/*
+  <li class="dropdown" data-dropdown="dropdown" >\
+    <a href="#" class="dropdown-toggle">Dropdown</a>\
+    <ul class="dropdown-menu">\
+      <li><a href="#">Secondary link</a></li>\
+      <li><a href="#">Something else here</a></li>\
+      <li class="divider"></li>\
+      <li><a href="#">Another link</a></li>\
+    </ul>\
+  </li>\
+  <li class="dropdown" data-dropdown="dropdown" >\
+    <a href="#" class="dropdown-toggle">Dropdown</a>\
+    <ul class="dropdown-menu">\
+      <li><a href="#">Secondary link</a></li>\
+      <li><a href="#">Something else here</a></li>\
+      <li class="divider"></li>\
+      <li><a href="#">Another link</a></li>\
+    </ul>\
+  </li>\
+  <li class="dropdown" data-dropdown="dropdown" >\
+    <a href="#" class="dropdown-toggle">Dropdown</a>\
+    <ul class="dropdown-menu">\
+      <li><a href="#">Secondary link</a></li>\
+      <li><a href="#">Something else here</a></li>\
+      <li class="divider"></li>\
+      <li><a href="#">Another link</a></li>\
+    </ul>\
+  </li>\
+*/
             $documentEditContent.find('button.delete').on('click', function(e) {
 
                 e.preventDefault();
@@ -514,7 +573,7 @@ $(function() {
           , path = url.attr('path').replace(/\/$/, '')
           , tags = url.param('tags') ? url.param('tags').split(',') : []
           , parameters = url.param();
-        
+
         // Add tags from url
         if (isPopstate || !$tags.data('run')) {
             $tags.data('run', false).tagit('removeAll');
@@ -560,7 +619,7 @@ $(function() {
         });
 
         var realTags = tags;
-        realTags.push(path || '/');
+        if (!parameters.search) realTags.push(path || '/');
         parameters.tags = realTags.join(',');
         // Show the documents
             $.get('/documents', parameters, function(data) {
@@ -584,7 +643,7 @@ $(function() {
                         });
                     }).join('') :
                     template.render({ empty: true });
-                    
+
             // Uncheck the $masterCheckbox
             $masterCheckbox.prop('checked', false);
             // Render the documents
@@ -592,7 +651,7 @@ $(function() {
             // Hide the form
             $documentsForm.css({ opacity: 0 });
             infoFooter.html(data.length + ' documents trouvés');
-            
+
             // Get the mime type filters
             var types = []
               , definedTypes = {}
@@ -608,13 +667,13 @@ $(function() {
                 }
             });
             $filterMime.html(template.render({ types: types }));
-            
+
             // Get the defaults filters
             // parameters is the filters + tags
             delete parameters.tags;
             var filters = Object.keys(parameters);
             // If it contains filters
-            if (filters.length) {
+            if (filters.length || parameters.search) {
                 // If the form is closed, open it
                 $filters.hasClass('filters_close') && $filterToggle.click();
                 // Add the values to the fields
@@ -622,6 +681,18 @@ $(function() {
                     $filters.find('[name="' + filter + '"]').val(parameters[filter]);
                 });
             }
+
+if (!parameters.search) {
+    if ($subDirectory.is(':hidden')) {
+        $subDirectory.show().prev('h3').show();
+    }
+    $searchInfos.hide();
+    $navigationInfos.show();
+} else {
+    $subDirectory.hide().prev('h3').hide();
+    $searchInfos.show().find('input:text').val(parameters.search);
+    $navigationInfos.hide();
+}
 
             // The first time, initialize tablesorter, afterwards, update it
             if (!$documents.data('sorted')) {
@@ -672,20 +743,12 @@ var templates = {
                 {{#types}}\
                 <option value="{{mime}}">{{label}}\
                 {{/types}}'
-  , editForm: '	<form>\
-  								<fieldset>\
-	                  <label for="apercu">Aperçu : </label>\
-	                  <div class="input">\
-	                    <img src="{{thumbnail}}">\
-	                    <input class="input-file xlarge" id="fileInput" name="fileInput" type="file">\
-	                  </div>\
-	                </fieldset>\
-  							</form>\
-  							<form>\
+  , editForm: '<form method="post" action="/documents/{{id}}">\
+                    <input type="hidden" name="_method" value="PUT">\
 	                <fieldset>\
 	                  <label for="title">Titre : </label>\
 	                  <div class="input">\
-	                    <input class="xlarge" type="text" name="title" id="title" value={{title}}>\
+	                    <input class="xlarge" type="text" name="title" id="title" value="{{title}}">\
 	                  </div>\
 	                </fieldset>\
 	                <fieldset>\
@@ -720,15 +783,31 @@ var templates = {
 	                <fieldset>\
 	                  <label for="repertoire">Répertoire : </label>\
 	                  <div class="input">\
-	                    <input class="xlarge" type="text" name="repertoire" id="repertoire" value={{repertoire}} />\
+                        <ul class="dir_select"></ul>\
+                        <input type="hidden" name="repertoire" id="repertoire" value="{{repertoire}}" />\
 	                  </div>\
 	                </fieldset>\
-	                <fieldset>\
+                    <fieldset>\
+                      <label for="extra">Extra : </label>\
+                      <div class="input">\
+                        <input class="xlarge" type="text" name="extra" id="extra" value="{{extra}}" />\
+                      </div>\
+                    </fieldset>\
+                    <fieldset>\
 	                  <div class="actions">\
 	                    <button class="btn danger delete"><span class="iconic trash"></span>Supprimer</button>&nbsp;<button class="btn danger hide"><span class="iconic x"></span>Annuler</button>&nbsp;<button class="btn success"><span class="iconic check"></span>Sauvegarder</button>\
 	                  </div>\
 	                </fieldset>\
 	              </form>\
+                 <form>\
+                    <fieldset>\
+                      <label for="apercu">Aperçu : </label>\
+                      <div class="input">\
+                        <img src="{{thumbnail}}">\
+                        <input class="input-file xlarge" id="fileInput" name="fileInput" type="file">\
+                      </div>\
+                    </fieldset>\
+                </form>\
 	              <form id="editfiles">\
 	              	<div class="actions">\
 		              	<fieldset>\
