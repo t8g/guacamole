@@ -4,6 +4,7 @@ var fs = require('fs')
     , im = require('imagemagick')
     , _ = require('underscore')
     , nconf = require('nconf')
+    , extrafields = require('./extrafields')
     ;
 
 
@@ -97,6 +98,7 @@ function define(mongoose, fn) {
             type: Date,
             default: Date.now,
             set: function(v) {
+console.log('created at');
                 if (!this.created_at) return Date.now();
                 return this.created_at;
             }
@@ -104,14 +106,20 @@ function define(mongoose, fn) {
         'updated_at': {
             type: Date,
             default: Date.now
-        }
+        },
+        '_keywords': [String]
     })
     .pre('save', function(next) { // A tester
+
+console.log('pre save');
+
         if (!this.created_at) {
             this.created_at = this.updated_at = new Date;
         } else {
             this.updated_at = new Date;
         }
+        // indexation
+        this._keywords = this.index();
         next();
     })
     .pre('remove', function(next) {
@@ -130,8 +138,40 @@ function define(mongoose, fn) {
         // sinon passe à null (retour fonc sur mime)
     });
 
+    // Extra fields (from extrafields.js file)
+    Document_Schema.add(extrafields);
+
+    // Indexation
+    Document_Schema.methods.index = function() {
+        var indexables = nconf.get('documents:index')
+            , index = []
+            , _this = this
+            ;
+
+        indexables.forEach(function(indexable) {
+            index = index.concat((_this[indexable]) ? _this[indexable].split(' ') : []);
+        });
+
+        return index;
+    };
+
+    // toJSON with getters
+    // https://gist.github.com/1584121
+    // https://github.com/LearnBoost/mongoose/issues/412
+    Document_Schema.methods.toJSON2 = function() {
+      var json = this.toJSON()
+          , _this = this
+          ;
+
+        Document_Schema.eachPath(function(path) {
+            json[path] = _this.get(path);
+        });
+        return json;
+    }
+
+
     // thumbnail maker with imagemagick
-    Document_Schema.methods.createThumbnail = function createThumbnail(callback) {
+    Document_Schema.methods.createThumbnail = function(callback) {
         var options = nconf.get('thumbnails:options');
 
         if (nconf.get('thumbnails:thumbables').indexOf(this.resource.mime) !== -1) {
@@ -165,7 +205,7 @@ function define(mongoose, fn) {
         }
     };
 
-    Document_Schema.statics.getSome = function getSome(req, callback) {
+    Document_Schema.statics.getSome = function(req, callback) {
         var query = {}
             ,blackhole = nconf.get('documents:blackhole')
             ,tags
@@ -193,6 +233,7 @@ function define(mongoose, fn) {
             if (filter = _.find(nconf.get('documents:filters'), function(v, k) { return k == key; })) {
 
                 // Tranforme valeur si Number
+                // @TODO regarder eachPath sur http://mongoosejs.com/docs/api.html
                 var path = Document_Schema.path(key);
                 if (!(type = (path ? path.instance : false))) {
                     var subpaths = key.split('.');
@@ -202,7 +243,15 @@ function define(mongoose, fn) {
                 if (type == 'Number') value = parseFloat(value);
 
                 if (filter == 'exact') _this.where(key, value);
-                if (filter == 'like') _this.regex(key, new RegExp(value, 'i'));
+                if (filter == 'like') _this.regex(key, new RegExp(value.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"), 'i'));
+            }
+
+            if (key == 'search') {
+                var values = value.split(' ');
+                values.forEach(function(value){
+                    value = value.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+                    _this.regex('_keywords', new RegExp(value, 'i'));
+                });
             }
 
         });
@@ -234,7 +283,7 @@ function define(mongoose, fn) {
         }}
     });
 
-    Tag_Schema.statics.getSome = function getSome(req, callback) {
+    Tag_Schema.statics.getSome = function(req, callback) {
         var query = {}
             ,subdirsof
             ;

@@ -28,7 +28,7 @@ header {
 	cursor: pointer;
 	.user-select;
 }
-#filters, #sub_directory {
+#filters, #sub_directory, #search_informations ul {
 	list-style: none;
 	.greybackgrounds;
 }
@@ -60,10 +60,10 @@ header {
 		i {
 			padding-right: 5px;
 			font-size: 1.4em;
-			padding-left: 5px;			
+			padding-left: 5px;
 		}
 		&:last-child {
-			border-bottom: none; 
+			border-bottom: none;
 		}
 		&:hover {
 			background-color: @linkColor;
@@ -79,7 +79,7 @@ header {
 				a {
 					color: inherit;
 				}
-			} 
+			}
 		}
 	}
 	a {
@@ -88,7 +88,7 @@ header {
 			text-decoration: none;
 			span {
 				text-decoration: none;
-			}	
+			}
 		}
 	}
 }
@@ -116,7 +116,7 @@ header {
 	.optioncheckbox {
 		margin-left: 10px;
 		float: left;
-		padding-top: 6px;	
+		padding-top: 6px;
 	}
 	#editfiles {
 		.actions {
@@ -134,4 +134,33 @@ header {
   color: rgba(0,0,0,.8)
 }
 
+/* @TODO A optimiser (en particulier le li (.inline)) */
+#search_informations button span {
+	font-size: 1em;
+	margin-right: 5px;
+}
+#search_informations form {
+	margin-bottom: 0;
+}
+#search_informations form .iconic {
+	font-size: 2.2em;
+	padding: 2px 4px;
+	height: 28px;
+	margin-top: -2px;
+}
+#search_informations ul.inline li {
+	float: left;
+	display: inline;
+}
+#search_informations ul.inline li.right {
+	float: right;
+}
 
+ul.dir_select li {
+	float: left;
+	list-style-type: none;
+}
+
+ul.dir_select li ul li {
+	float: none;
+}

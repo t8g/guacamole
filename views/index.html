@@ -74,8 +74,8 @@
                             </ul>
                         </li>
                     </ul>-->
-                    <form class="pull-left" action="">
-                        <input type="text" placeholder="Search" />
+                    <form class="pull-left search_form" action="/?" method="get">
+                        <input type="text" placeholder="Search" name="search" />
                         <button type="submit" class="btn primary iconic magnifying-glass"></button>
                     </form>
                     <ul class="nav secondary-nav">
@@ -102,10 +102,17 @@
                             <div id="uploader" class="btn large primary" data-placement="below" data-twipsy title='Cliquer ou glisser/déposer des documents'>
                                 <span class='iconic box'></span>
                                 <label>Uploads</label>
-                                <input type=file id="file" multiple>
+                                <input type="file" id="file" multiple>
                             </div>
                         </form>
                     </li>
+                </ul>
+            </section>
+            <section id="search_informations" class="grid_12">
+                <h3>Recherche<span class="iconic magnifying-glass"></span></h3>
+                <ul class="inline">
+                    <li class="right"><button class="btn danger"><span class="iconic x"></span>Annuler la recherche</button></li>
+                    <li><form class="search_form">Votre recherche : <input class="xxlarge" /> <button type="submit" class="btn primary iconic magnifying-glass"></button></form></li>
                 </ul>
             </section>
             <section class="grid_4">
@@ -273,6 +280,7 @@
 <script src="/js/bootstrap/bootstrap-scrollspy.js"></script>
 <script src="/js/bootstrap/bootstrap-buttons.js"></script>
 <script src="/js/bootstrap/bootstrap-tabs.js"></script>
+<script src="/js/dir-selector.js"></script>
 
 <script src="/js/application.js"></script>
 <script src="/js/main.js"></script>
@@ -282,6 +290,7 @@
     <script src="///ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
     <script>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
 <![endif]-->
+
 
 </body>
 </html>
