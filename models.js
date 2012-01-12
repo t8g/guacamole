@@ -98,6 +98,7 @@ function define(mongoose, fn) {
             type: Date,
             default: Date.now,
             set: function(v) {
+console.log('created at');
                 if (!this.created_at) return Date.now();
                 return this.created_at;
             }
@@ -109,6 +110,9 @@ function define(mongoose, fn) {
         '_keywords': [String]
     })
     .pre('save', function(next) { // A tester
+
+console.log('pre save');
+
         if (!this.created_at) {
             this.created_at = this.updated_at = new Date;
         } else {

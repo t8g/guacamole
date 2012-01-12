@@ -27,13 +27,17 @@
 
             $.get('/tags', { subdirsof: dir || '/'}, function(data) {
                 var ul = li.find('ul');
+
+                // ajoute {label:''} au début de data
+                data.unshift({label:  dir || '/'});
                 data.forEach(function(item) {
-                    //ul.append()
                     if (fulldirname !== item.label)
-                        ul.append($('<li><a href="#' + item.label + '">' + item.label.replace(dir, '') + '</a></li>')).find('a').on('click', function(ev) {
+                        ul.append($('<li><a href="#' + item.label + '">' + (item.label.replace(dir, '') || '---') + '</a></li>')).find('a').on('click', function(ev) {
                             ev.preventDefault();
                             plugin.el.empty();
-                            addSelect(this.hash.substr(1));
+                            var newdir = this.hash.substr(1);
+                            if (plugin.settings.input) plugin.settings.input.val(newdir);
+                            addSelect(newdir);
                         });
                 });
             });
@@ -43,11 +47,10 @@
             if (dir.length) addSelect(dirs.join('/'), '/' + dirname);
         }
 
-/*
-        plugin.foo_public_method = function() {
-            // code goes here
-        }
-*/
+        // plugin.foo_public_method = function() {
+        //     // code goes here
+        // }
+
         init();
 
     }

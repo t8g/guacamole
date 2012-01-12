@@ -372,41 +372,12 @@ $(function() {
               });
             $documentEditContent.html(render);
 
-        var myplugin = new $.dirSelector($documentEditContent.find('ul.dir_select'), {
-            dir: '/rep1/rep1_1'
-        });
+            // dir selector
+            var myplugin = new $.dirSelector($documentEditContent.find('ul.dir_select'), {
+                dir: '/rep1/rep1_1',
+                input: $documentEditContent.find('#repertoire')
+            });
 
-//$documentEditContent.find('.dir_select').dirSelector();
-//console.log($documentEditContent.find('.dir_select'));
-/*
-  <li class="dropdown" data-dropdown="dropdown" >\
-    <a href="#" class="dropdown-toggle">Dropdown</a>\
-    <ul class="dropdown-menu">\
-      <li><a href="#">Secondary link</a></li>\
-      <li><a href="#">Something else here</a></li>\
-      <li class="divider"></li>\
-      <li><a href="#">Another link</a></li>\
-    </ul>\
-  </li>\
-  <li class="dropdown" data-dropdown="dropdown" >\
-    <a href="#" class="dropdown-toggle">Dropdown</a>\
-    <ul class="dropdown-menu">\
-      <li><a href="#">Secondary link</a></li>\
-      <li><a href="#">Something else here</a></li>\
-      <li class="divider"></li>\
-      <li><a href="#">Another link</a></li>\
-    </ul>\
-  </li>\
-  <li class="dropdown" data-dropdown="dropdown" >\
-    <a href="#" class="dropdown-toggle">Dropdown</a>\
-    <ul class="dropdown-menu">\
-      <li><a href="#">Secondary link</a></li>\
-      <li><a href="#">Something else here</a></li>\
-      <li class="divider"></li>\
-      <li><a href="#">Another link</a></li>\
-    </ul>\
-  </li>\
-*/
             $documentEditContent.find('button.delete').on('click', function(e) {
 
                 e.preventDefault();

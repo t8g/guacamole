@@ -227,8 +227,9 @@ app.put('/documents/:id', function(req, res) {
 
         // @TODO upload pj + regeneration thumb (option)
         // @TODO upload thumb
-
-        doc.set(req.body);
+console.log(req.body);
+        //doc.set(req.body);
+doc.created_at =  new Date();
         doc.save(function(err) {
             res.respond(err || doc, err ? 500 : 200);
         });
