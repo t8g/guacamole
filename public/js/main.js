@@ -175,6 +175,7 @@ $(function() {
     });
 
     // @TODO verifier si l'event drop est necessaire
+    // @FIXME check espae dans répertoires
     $file.on('change', function(e) {
         // If it's dropped
         $uploader.removeClass('over');
@@ -334,6 +335,7 @@ $(function() {
                     // Size from o to ko
                     size: Math.ceil(doc.resource.size / 1024),
                     mime: doc.resource.mime.split('/')[1],
+                    // @TODO image par défaut si pas de thumbnail
                     thumbnail: '/documents/' + doc._id + '/thumbnail',
                     file: '/documents/' + doc._id + '/file',
                     id: doc._id,
