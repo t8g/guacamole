@@ -28,17 +28,17 @@
             $.get('/tags', { subdirsof: dir || '/'}, function(data) {
                 var ul = li.find('ul');
 
-                // ajoute {label:''} au début de data
-                data.unshift({label:  dir || '/'});
+                data.unshift({label: dir || '/'});
                 data.forEach(function(item) {
-                    if (fulldirname !== item.label)
-                        ul.append($('<li><a href="#' + item.label + '">' + (item.label.replace(dir, '') || '---') + '</a></li>')).find('a').on('click', function(ev) {
-                            ev.preventDefault();
-                            plugin.el.empty();
-                            var newdir = this.hash.substr(1);
-                            if (plugin.settings.input) plugin.settings.input.val(newdir);
-                            addSelect(newdir);
-                        });
+                    ul.append($('<li><a href="#' + item.label + '">' + (item.label.replace(dir, '') || '---') + '</a></li>')).find('a').on('click', function(ev) {
+                        ev.preventDefault();
+                        plugin.el.empty();
+                        var newdir = this.hash.substr(1);
+                        // Si il ne comporte qu'un caractère, c'est le /
+                        if (newdir.length === 1) newdir = '';
+                        if (plugin.settings.input) plugin.settings.input.val(newdir);
+                        addSelect(newdir);
+                    });
                 });
             });
 
