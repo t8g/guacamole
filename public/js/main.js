@@ -5,7 +5,7 @@ $(function() {
       , $subDirectory = $('#sub_directory')
       , $tags = $('#tags')
       , $overlays = $('.overlay')
-      , $openOverlay = []
+      //, $openOverlay = []
       , $documents = $('#documents')
       , $masterCheckbox = $documents.find('thead input')
       , $documentCheckboxes = $documents.find('tbody input')
@@ -20,11 +20,13 @@ $(function() {
     /********/
     /* Misc */
     /********/
-
+    window.$openOverlay = []
     // hide or show overlay, set data-open (for esc-key close action), scroll
     $.fn.overlayToggle = function(open) {
         window.scrollTo(0, $filterToggle.offset().top - 50);
-        return $openOverlay = $(this).attr('data-open', open)[open ? 'show' : 'hide']();
+        var $this = $(this);
+        $openOverlay = open ? $this : []; 
+        return $this.attr('data-open', open)[open ? 'show' : 'hide']();
     };
 
     // close button on overlays
@@ -43,7 +45,7 @@ $(function() {
     // Close overlay on click anywhere
     $(document).on('mouseup', function(e) {
         // Has $openOverlay and target isn't in it
-        if ($openOverlay.length && !$(e.target).parents($openOverlay).length) {
+        if ($openOverlay.length && !$(e.target).parents('.overlay').length) {
             $openOverlay.overlayToggle(false);
         }
     });
