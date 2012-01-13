@@ -1,4 +1,4 @@
-    /**
+/**
  * Guacamole.js
  * Copyright (c) 2011 Toog <contact@toog.fr>
  * MIT Licensed
@@ -225,46 +225,12 @@ app.put('/documents/:id', function(req, res) {
     Document.findById(req.params.id, function(err, doc) {
         if (err) return res.respond(err, 500);
 
-        // @TODO upload pj + regeneration thumb (option)
-        // @TODO upload thumb
-        doc.set(req.body);
-        //doc.created_at =  new Date();
-        doc.save(function(err) {
+        doc.update(req.body, function(err) {
             res.respond(err || doc, err ? 500 : 200);
         });
 
     });
 
-/*
-
-
-// T'es en train de bosser ici !!!
-
-        if (err) return handleError(res, err);
-        if (!doc) return res.send(404);
-
-        fields = req.body;
-        if (req.files.resource) {
-            fields = _.extend(req.body, { resource: {
-                name: req.files.resource.filename,
-                tmp: req.files.resource.path,
-            }});
-        }
-        doc.set(fields);
-
-        if (req.files.resource) { // create thumbnail and save
-            doc.createThumbnail(function(err) {
-                err ? res.respond(err, 500) : doc.save(function(err) {
-                    res.respond(err || doc, err ? 500 : 200);
-                });
-            });
-        } else { // just save
-            doc.save(function(err) {
-                res.respond(err || doc, err ? 500 : 200);
-            })
-        }
-    });
-*/
 });
 
 /**

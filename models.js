@@ -39,9 +39,12 @@ function define(mongoose, fn) {
                 if (v == '') v = this.title;
                 if (!this.slug) this.slug = v;
                 return v;
-            }
+            },
+            trim: true
         },
-        'description': String,
+        'description': {
+            type: String
+        },
         'resource': {
             type: { name: String, file: String, size: Number },
             set: function(v) {
@@ -98,7 +101,6 @@ function define(mongoose, fn) {
             type: Date,
             default: Date.now,
             set: function(v) {
-console.log('created at');
                 if (!this.created_at) return Date.now();
                 return this.created_at;
             }
@@ -110,9 +112,6 @@ console.log('created at');
         '_keywords': [String]
     })
     .pre('save', function(next) { // A tester
-
-console.log('pre save');
-
         if (!this.created_at) {
             this.created_at = this.updated_at = new Date;
         } else {
@@ -168,6 +167,14 @@ console.log('pre save');
         });
         return json;
     }
+
+    Document_Schema.methods.update = function(values, callback) {
+        var _this = this;
+        _.each(values, function(value, path) {
+            if (Document_Schema.path(path) || Document_Schema.virtualpath(path)) _this.set(path, value);
+        });
+        this.save(callback);
+    };
 
 
     // thumbnail maker with imagemagick
