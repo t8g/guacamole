@@ -221,7 +221,6 @@ app.del('/documents/:id', function(req, res) {
  */
 
 app.put('/documents/:id', function(req, res) {
-
     Document.findById(req.params.id, function(err, doc) {
         if (err) return res.respond(err, 500);
 
