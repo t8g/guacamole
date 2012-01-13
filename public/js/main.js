@@ -374,7 +374,9 @@ $(function() {
             var $editTag = $documentEditContent.find('.edit-tags')
               , $inputDir = $('<input>')
               , dir;
+            
             $editTag.tagit({
+                tagSource: tags.source(),
                 itemName: 'tags',
                 fieldName: '',
                 allowSpaces: true
