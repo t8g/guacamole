@@ -5,6 +5,7 @@ $(function() {
       , $subDirectory = $('#sub_directory')
       , $tags = $('#tags')
       , $overlays = $('.overlay')
+      , $openOverlay = []
       , $documents = $('#documents')
       , $masterCheckbox = $documents.find('thead input')
       , $documentCheckboxes = $documents.find('tbody input')
@@ -22,29 +23,33 @@ $(function() {
 
     // hide or show overlay, set data-open (for esc-key close action), scroll
     $.fn.overlayToggle = function(open) {
-        return this.each(function() {
-            $(this).attr('data-open', open)[open ? 'show' : 'hide']();
-            window.scrollTo(0, $filterToggle.offset().top - 50);
-            //$('html, body').animate({ scrollTop: $('#rightbar').offset().top - 50 }, 500);
-        });
+        window.scrollTo(0, $filterToggle.offset().top - 50);
+        return $openOverlay = $(this).attr('data-open', open)[open ? 'show' : 'hide']();
     };
 
     // close button on overlays
-    $('.hide').live('click', function(e) {
+    $('.hide').on('click', function(e) {
         e.preventDefault();
-        $(this).parents('.overlay').overlayToggle(false);
+        $openOverlay.overlayToggle(false);
+    });
+
+    // Close overlays on escape
+    $window.on('keydown', function(e) {
+        if ($openOverlay.length && e.keyCode === 27) {
+            $openOverlay.overlayToggle(false);
+        }
+    });
+    
+    // Close overlay on click anywhere
+    $(document).on('mouseup', function(e) {
+        // Has $openOverlay and target isn't in it
+        if ($openOverlay.length && !$(e.target).parents($openOverlay).length) {
+            $openOverlay.overlayToggle(false);
+        }
     });
 
     // Twipsy
     $('[data-twipsy]').twipsy();
-
-    // Close overlays on escape
-    $window.on('keydown', function(e) {
-        var $openOverlay = $overlays.filter('[data-open=true]');
-        if (e.keyCode === 27 && $openOverlay.length) {
-            $openOverlay.overlayToggle(false);
-        }
-    });
 
     /********/
     /* Tags */
