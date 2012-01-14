@@ -5,6 +5,7 @@ $(function() {
       , $subDirectory = $('#sub_directory')
       , $tags = $('#tags')
       , $overlays = $('.overlay')
+      //, $openOverlay = []
       , $documents = $('#documents')
       , $masterCheckbox = $documents.find('thead input')
       , $documentCheckboxes = $documents.find('tbody input')
@@ -19,32 +20,38 @@ $(function() {
     /********/
     /* Misc */
     /********/
-
+    window.$openOverlay = []
     // hide or show overlay, set data-open (for esc-key close action), scroll
     $.fn.overlayToggle = function(open) {
-        return this.each(function() {
-            $(this).attr('data-open', open)[open ? 'show' : 'hide']();
-            window.scrollTo(0, $filterToggle.offset().top - 50);
-            //$('html, body').animate({ scrollTop: $('#rightbar').offset().top - 50 }, 500);
-        });
+        window.scrollTo(0, $filterToggle.offset().top - 50);
+        var $this = $(this);
+        $openOverlay = open ? $this : []; 
+        return $this.attr('data-open', open)[open ? 'show' : 'hide']();
     };
 
     // close button on overlays
-    $('.hide').live('click', function(e) {
+    $('.hide').on('click', function(e) {
         e.preventDefault();
-        $(this).parents('.overlay').overlayToggle(false);
+        $openOverlay.overlayToggle(false);
+    });
+
+    // Close overlays on escape
+    $window.on('keydown', function(e) {
+        if ($openOverlay.length && e.keyCode === 27) {
+            $openOverlay.overlayToggle(false);
+        }
+    });
+    
+    // Close overlay on click anywhere
+    $(document).on('mouseup', function(e) {
+        // Has $openOverlay and target isn't in it
+        if ($openOverlay.length && !$(e.target).parents('.overlay').length) {
+            $openOverlay.overlayToggle(false);
+        }
     });
 
     // Twipsy
     $('[data-twipsy]').twipsy();
-
-    // Close overlays on escape
-    $window.on('keydown', function(e) {
-        var $openOverlay = $overlays.filter('[data-open=true]');
-        if (e.keyCode === 27 && $openOverlay.length) {
-            $openOverlay.overlayToggle(false);
-        }
-    });
 
     /********/
     /* Tags */
@@ -194,8 +201,8 @@ $(function() {
               , xhr = new XMLHttpRequest()
               , $progress;
 
-            // Add the tag and the file to the form
-            formData.append('tags', location.pathname)
+            // Add the tag and the file to the form, let spaces in it
+            formData.append('tags', location.pathname.replace(/%20/g, ' '))
             formData.append('resource', file)
 
             // Open the connection
@@ -371,7 +378,12 @@ $(function() {
             $documentEditContent.html(render);
             
             // Tagit
-            var $editTag = $documentEditContent.find('.edit-tags').tagit({
+            var $editTag = $documentEditContent.find('.edit-tags')
+              , $inputDir = $('<input>')
+              , dir;
+            
+            $editTag.tagit({
+                tagSource: tags.source(),
                 itemName: 'tags',
                 fieldName: '',
                 allowSpaces: true
@@ -384,22 +396,36 @@ $(function() {
                     $editTag.tagit('createTag', tag);
                 // Add the directory
                 } else {
-                    $('<input>').attr({
+                    $inputDir.attr({
                         type: 'hidden',
                         name: 'tags[][]',
                         value: tag
                     }).insertAfter($editTag);
+                    dir = tag;
                 }
             });
 
+            // @TODO faire mieux, e.g, $(el).dirSelector(map)
             // dir selector
             var myplugin = new $.dirSelector($documentEditContent.find('ul.dir_select'), {
-                dir: '/rep1/rep1_1',
-                input: $documentEditContent.find('#repertoire')
+                dir: dir,
+                input: $inputDir
             });
+            
 
-            $documentEditContent.find('button.delete').on('click', function(e) {
-
+            // Edit the document
+            $documentEditContent.find('.edit_form').on('submit', function(e) {
+                e.preventDefault();
+                var data = $(this).serializeArray();
+                data.push({ '_method': 'PUT' });
+                $.post(this.action, data, function(data) {
+                    $documentEdit.overlayToggle(false);
+                    changeContent();
+                });
+            });
+    
+            // Delete the document
+            $documentEditContent.find('.delete').on('click', function(e) {
                 e.preventDefault();
                 if (confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) {
                     $.post('/documents/' + doc._id, { '_method': 'DELETE' }, function(data) {
@@ -408,19 +434,25 @@ $(function() {
                     });
                 }
             });
-
         });
     });
 
     // Click on the checkboxes
     $documents.on('change', $documentCheckboxes, function(e) {
         var nbCheckbox = $documentCheckboxes.length
-            , nbChecked;
+          , nbChecked;
         if (nbCheckbox) {
             nbChecked = $documentCheckboxes.filter(':checked').length;
             $documentsForm.css({ opacity: 1 });
             if (nbChecked == 0) $documentsForm.css({ opacity: 0 });
             if (nbChecked < nbCheckbox) $masterCheckbox.prop('checked', false);
+        }
+    });
+    
+    // Click on the line => click on the checkbox
+    $documents.on('click', 'tr', function(e) {
+        if (e.target.nodeName !== 'INPUT') {
+            $(this).find('input')[0].click()
         }
     });
 
@@ -734,7 +766,7 @@ var templates = {
                 {{#types}}\
                 <option value="{{mime}}">{{label}}\
                 {{/types}}'
-  , editForm: '<form method="post" action="/documents/{{id}}">\
+  , editForm: '<form method="post" action="/documents/{{id}}" class="edit_form">\
                     <input type="hidden" name="_method" value="PUT">\
 	                <fieldset>\
 	                  <label for="title">Titre : </label>\
