@@ -26,11 +26,11 @@
 
 var express = require('express')
     , mongoose = require('mongoose')
-    , models = require('./models')
+    , models = require(__dirname + '/models')
     , _ = require('underscore')
     , fs = require('fs')
     , nconf = require('nconf')
-    , tools = require('./tools')
+    , tools = require(__dirname + '/tools')
     , async = require('async')
     , zip = require('node-native-zip')
     ;
@@ -39,7 +39,7 @@ var express = require('express')
  * Configuration
  */
 
-nconf.file({ file: './conf.json' });
+nconf.file({ file: __dirname + '/conf.json' });
 
 /**
  * Vars
