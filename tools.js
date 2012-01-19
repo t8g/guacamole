@@ -1,6 +1,7 @@
 var fs = require('fs')
     , path = require('path')
     , http = require('http')
+    , util = require('util')
     ;
 
 /**
@@ -103,5 +104,29 @@ function serve(file, headers, req, res, next) {
     });
 }
 
+function copy(src, dst, cb) {
+    function copy(err) {
+        var is
+        , os
+        ;
+
+        if (!err) {
+            return cb(new Error("File " + dst + " exists."));
+        }
+
+        fs.stat(src, function (err) {
+            if (err) {
+                return cb(err);
+            }
+            is = fs.createReadStream(src);
+            os = fs.createWriteStream(dst);
+            util.pump(is, os, cb);
+        });
+    }
+
+    fs.stat(dst, copy);
+};
+
 exports.readDir = readDir;
 exports.serve = serve;
+exports.copy = copy;

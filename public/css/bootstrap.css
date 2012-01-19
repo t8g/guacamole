@@ -3043,7 +3043,20 @@ ul.dir_select li ul li {
   width: inherit;
   padding-top: 0;
 }
-#file {
+#uploadone {
+  float: left;
+}
+#uploadone label {
+  color: white;
+  font: 13px/13px sans-serif;
+  text-align: center;
+  cursor: pointer;
+  pointer-events: none;
+  float: right;
+  width: inherit;
+  padding-top: 0;
+}
+#file, #uploadone input[type=file] {
   position: absolute;
   width: 100%;
   height: 100%;

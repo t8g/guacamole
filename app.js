@@ -33,6 +33,7 @@ var express = require('express')
     , tools = require(__dirname + '/tools')
     , async = require('async')
     , zip = require('node-native-zip')
+    , argv = require('optimist').argv
     ;
 
 /**
@@ -166,7 +167,6 @@ app.get('/documents', function(req, res) {
 
 app.get('/documents/:id', function(req, res) {
     Document.findById(req.params.id, function(err, doc) {
-        //console.log(doc.toJSON2());
         res.respond(err || doc.toJSON2(), err ? 500 : ( doc ? 200 : 404 ));
     });
 });
@@ -224,9 +224,15 @@ app.put('/documents/:id', function(req, res) {
     Document.findById(req.params.id, function(err, doc) {
         if (err) return res.respond(err, 500);
 
-        doc.update(req.body, function(err) {
-            res.respond(err || doc, err ? 500 : 200);
-        });
+
+        if (req.files.resource) {
+            console.log('ici');
+            res.respond(doc, 200);
+        } else {
+            doc.update(req.body, function(err) {
+                res.respond(err || doc, err ? 500 : 200);
+            });
+        }
 
     });
 
@@ -256,7 +262,7 @@ app.post('/documents/batch/delete', function(req, res) {
  * @return {Json} status
  * @api public
  */
-
+//@TODO : statistiques aussi
 app.post('/documents/batch/download', function(req, res, next) {
     Document.find({ _id: { $in : req.body.ids } }, function(err, docs) {
         if (err) return res.respond(err, 500);
@@ -372,7 +378,7 @@ app.get('/documents/:id/file', function(req, res, next) {
     Document.findById(req.params.id, function(err, doc) {
         if (err || _.isEmpty(doc)) res.respond('File Not Found', 404);
         // @TODO : statistiques de téléchargement
-        var file =
+//        var file =
 
         tools.serve(
             nconf.get('documents:dirs:files') + doc.resource.file,
@@ -470,6 +476,6 @@ app.get('/*', function(req, res, next) {
     else next();
 });
 
-app.listen(nconf.get('application:port'));
+app.listen(argv.p || argv.port || 3000);
+
 //}
-//console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

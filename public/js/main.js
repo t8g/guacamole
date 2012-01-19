@@ -25,7 +25,7 @@ $(function() {
     $.fn.overlayToggle = function(open) {
         window.scrollTo(0, $filterToggle.offset().top - 50);
         var $this = $(this);
-        $openOverlay = open ? $this : []; 
+        $openOverlay = open ? $this : [];
         return $this.attr('data-open', open)[open ? 'show' : 'hide']();
     };
 
@@ -41,7 +41,7 @@ $(function() {
             $openOverlay.overlayToggle(false);
         }
     });
-    
+
     // Close overlay on click anywhere
     $(document).on('mouseup', function(e) {
         // Has $openOverlay and target isn't in it
@@ -112,6 +112,7 @@ $(function() {
             }
         }
       , clicked: function() {
+
             return function(e, $tag) {
                 var $this = $(this)
                   , tag = $this.tagit('tagLabel', $tag)
@@ -164,10 +165,9 @@ $(function() {
                 changeContent(url);
             }
         },
-
         removeConfirmation: true,
         allowSpaces: true
-    });
+    }).find('input:visible').unbind('blur');
 
     /************/
     /* Uploader */
@@ -376,19 +376,19 @@ $(function() {
                     extra: doc.extra || ''
               });
             $documentEditContent.html(render);
-            
+
             // Tagit
             var $editTag = $documentEditContent.find('.edit-tags')
               , $inputDir = $('<input>')
               , dir;
-            
+
             $editTag.tagit({
                 tagSource: tags.source(),
                 itemName: 'tags',
                 fieldName: '',
                 allowSpaces: true
             });
-            
+
             // Default tags
             doc.tags.forEach(function(tag) {
                 // Create the tag
@@ -411,7 +411,7 @@ $(function() {
                 dir: dir,
                 input: $inputDir
             });
-            
+
 
             // Edit the document
             $documentEditContent.find('.edit_form').on('submit', function(e) {
@@ -423,7 +423,7 @@ $(function() {
                     changeContent();
                 });
             });
-    
+
             // Delete the document
             $documentEditContent.find('.delete').on('click', function(e) {
                 e.preventDefault();
@@ -434,6 +434,56 @@ $(function() {
                     });
                 }
             });
+
+            // uploader
+            var $uploadonefile = $('#uploadone input:file');
+            $uploadonefile.on('change', function(e) {
+                if (!this.files.count) return;
+                var file = this.files[0];
+
+                // Ne marche pas sur IE9 et Opera http://caniuse.com/#search=formdata
+                var formData = new FormData()
+                    , xhr = new XMLHttpRequest()
+                    , $progress;
+
+                formData.append('resource', file);
+                formData.append('_method', 'PUT');
+
+                // Open the connection
+                xhr.open('POST', '/documents/' + doc._id);
+
+                xhr.upload.addEventListener('loadstart', function(e) {
+                    // affiche la progressbar
+                }, false);
+
+                xhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable) {
+                        var percentLoaded = Math.round((e.loaded / e.total) * 100);
+                        if (percentLoaded <= 100) {
+                            //$progress.val(percentLoaded);
+                            //update la progressbar
+                        }
+                    }
+                }, false);
+
+                xhr.addEventListener('readystatechange', function(e) {
+                    if (this.readyState === 4 && this.status === 200) {
+                        var response = JSON.parse(xhr.response);
+                        ids.push(response._id);
+                        if (ids.length === files.length) {
+                            // Flush the result and update the table
+                            $file.val('');
+                            changeContent();
+                        }
+                    }
+                }, false);
+
+                // Send the form
+                xhr.send(formData);
+
+                console.log(files);
+            });
+
         });
     });
 
@@ -448,10 +498,10 @@ $(function() {
             if (nbChecked < nbCheckbox) $masterCheckbox.prop('checked', false);
         }
     });
-    
+
     // Click on the line => click on the checkbox
     $documents.on('click', 'tr', function(e) {
-        if (e.target.nodeName !== 'INPUT') {
+        if (e.target.nodeName !== 'INPUT' && e.target.nodeName !== 'A') {
             $(this).find('input')[0].click()
         }
     });
@@ -705,17 +755,17 @@ $(function() {
                 });
             }
 
-if (!parameters.search) {
-    if ($subDirectory.is(':hidden')) {
-        $subDirectory.show().prev('h3').show();
-    }
-    $searchInfos.hide();
-    $navigationInfos.show();
-} else {
-    $subDirectory.hide().prev('h3').hide();
-    $searchInfos.show().find('input:text').val(parameters.search);
-    $navigationInfos.hide();
-}
+            if (!parameters.search) {
+                if ($subDirectory.is(':hidden')) {
+                    $subDirectory.show().prev('h3').show();
+                }
+                $searchInfos.hide();
+                $navigationInfos.show();
+            } else {
+                $subDirectory.hide().prev('h3').hide();
+                $searchInfos.show().find('input:text').val(parameters.search);
+                $navigationInfos.hide();
+            }
 
             // The first time, initialize tablesorter, afterwards, update it
             if (!$documents.data('sorted')) {
@@ -766,90 +816,91 @@ var templates = {
                 {{#types}}\
                 <option value="{{mime}}">{{label}}\
                 {{/types}}'
-  , editForm: '<form method="post" action="/documents/{{id}}" class="edit_form">\
-                    <input type="hidden" name="_method" value="PUT">\
-	                <fieldset>\
-	                  <label for="title">Titre : </label>\
-	                  <div class="input">\
-	                    <input class="xlarge" type="text" name="title" id="title" value="{{title}}">\
-	                  </div>\
-	                </fieldset>\
-	                <fieldset>\
-	                  <label for="description">Description : </label>\
-	                  <div class="input">\
-	                    <textarea class="xlarge" name="description" id="description" rows="3">{{description}}</textarea>\
-	                  </div>\
-	                </fieldset>\
-	                <fieldset>\
-	                  <label for="type">Type : </label>\
-	                  <div class="input">\
-	                    <span class="uneditable-input">{{mime}}</span>\
-	                  </div>\
-	                </fieldset>\
-	                <fieldset>\
-	                  <label for="poids">Poids : </label>\
-	                  <div class="input">\
-	                    <span class="uneditable-input">{{size}} ko</span>\
-	                  </div>\
-	                </fieldset>\
-	                <fieldset>\
-	                  <label for="date">Date : </label>\
-	                  <div class="input">\
-	                    <span class="uneditable-input">{{created_at}}</span>\
-	                  </div>\
-	                </fieldset>\
-	                <fieldset>\
-	                  <label for="tags">Tags : </label>\
-	                    <ul class="edit-tags"></ul>\
-	                </fieldset>\
-	                <fieldset>\
-	                  <label for="repertoire">Répertoire : </label>\
-	                  <div class="input">\
-                        <ul class="dir_select"></ul>\
-                        <input type="hidden" name="repertoire" id="repertoire" value="{{repertoire}}" />\
-	                  </div>\
-	                </fieldset>\
-                    <fieldset>\
-                      <label for="extra">Extra : </label>\
-                      <div class="input">\
-                        <input class="xlarge" type="text" name="extra" id="extra" value="{{extra}}" />\
-                      </div>\
-                    </fieldset>\
-                    <fieldset>\
-	                  <div class="actions">\
-	                    <button type="button" class="btn danger delete"><span class="iconic trash"></span>Supprimer</button>\
-	                    <button type="button" class="btn danger hide"><span class="iconic x"></span>Annuler</button>\
-	                    <button class="btn success"><span class="iconic check"></span>Sauvegarder</button>\
-	                  </div>\
-	                </fieldset>\
-	              </form>\
-                 <form>\
-                    <fieldset>\
-                      <label for="apercu">Aperçu : </label>\
-                      <div class="input">\
-                        <img src="{{thumbnail}}">\
-                        <input class="input-file xlarge" id="fileInput" name="fileInput" type="file">\
-                      </div>\
-                    </fieldset>\
-                </form>\
-	              <form id="editfiles">\
-	              	<div class="actions">\
-		              	<fieldset>\
-		                  <label for="replace">Remplacer : </label>\
-		                  <div class="input">\
-		                    <button class="btn primary left"><span class="iconic arrow-up"></span>Upload</button>\
-		                    <div class="optioncheckbox">\
-		                      <input type="checkbox" name="Checkboxes" value="option">\
-		                      <span>Regénérer l\'aperçu</span>\
-		                    </div>\
-		                  </div>\
-		                </fieldset>\
-		                <fieldset>\
-		                  <label for="download">Télécharger : </label>\
-		                  <div class="input">\
-		                    <a class="btn primary" href="{{file}}"><span class="iconic arrow-bottom"></span>Download</a>\
-		                  </div>\
-		                </fieldset>\
-	                </div>\
-	              </form>'
+  , editForm: '\
+    <form method="post" action="/documents/{{id}}" class="edit_form">\
+        <input type="hidden" name="_method" value="PUT">\
+            <fieldset>\
+                <label for="title">Titre : </label>\
+                    <div class="input">\
+                        <input class="xlarge" type="text" name="title" id="title" value="{{title}}">\
+                    </div>\
+            </fieldset>\
+            <fieldset>\
+                <label for="description">Description : </label>\
+                <div class="input">\
+                    <textarea class="xlarge" name="description" id="description" rows="3">{{description}}</textarea>\
+                </div>\
+            </fieldset>\
+            <fieldset>\
+                <label for="type">Type : </label>\
+                <div class="input">\
+                    <span class="uneditable-input">{{mime}}</span>\
+                </div>\
+            </fieldset>\
+            <fieldset>\
+                <label for="poids">Poids : </label>\
+                <div class="input">\
+                    <span class="uneditable-input">{{size}} ko</span>\
+                </div>\
+            </fieldset>\
+            <fieldset>\
+            <label for="date">Date : </label>\
+                <div class="input">\
+                    <span class="uneditable-input">{{created_at}}</span>\
+                </div>\
+            </fieldset>\
+            <fieldset>\
+                <label for="tags">Tags : </label>\
+                <ul class="edit-tags"></ul>\
+            </fieldset>\
+            <fieldset>\
+                <label for="repertoire">Répertoire : </label>\
+                <div class="input">\
+                    <ul class="dir_select"></ul>\
+                    <input type="hidden" name="repertoire" id="repertoire" value="{{repertoire}}" />\
+                </div>\
+            </fieldset>\
+            <fieldset>\
+                <label for="extra">Extra : </label>\
+                <div class="input">\
+                    <input class="xlarge" type="text" name="extra" id="extra" value="{{extra}}" />\
+                </div>\
+            </fieldset>\
+            <fieldset>\
+                <div class="actions">\
+                    <button type="button" class="btn danger delete"><span class="iconic trash"></span>Supprimer</button>\
+                    <button type="button" class="btn danger hide"><span class="iconic x"></span>Annuler</button>\
+                    <button class="btn success"><span class="iconic check"></span>Sauvegarder</button>\
+                </div>\
+            </fieldset>\
+        </form>\
+        <form>\
+            <fieldset>\
+                <label for="apercu">Aperçu : </label>\
+                <div class="input">\
+                    <img src="{{thumbnail}}">\
+                    <input class="input-file xlarge" id="fileInput" name="fileInput" type="file">\
+                </div>\
+            </fieldset>\
+        </form>\
+        <form id="editfiles">\
+            <div class="actions">\
+                <fieldset>\
+                    <label for="replace">Remplacer : </label>\
+                    <div id="uploadone" class="btn primary" data-original-title="Cliquer ou glisser/déposer un document">\
+                        <span class="iconic arrow-up"><label>Upload</label><input type="file">\
+                    </div>\
+                    <div class="optioncheckbox">\
+                        <input type="checkbox" name="Checkboxes" value="option">\
+                        <span>Regénérer l\'aperçu</span>\
+                    </div>\
+                </fieldset>\
+                <fieldset>\
+                    <label for="download">Télécharger : </label>\
+                    <div class="input">\
+                        <a class="btn primary" href="{{file}}"><span class="iconic arrow-bottom"></span>Download</a>\
+                    </div>\
+                </fieldset>\
+            </div>\
+        </form>'
 }

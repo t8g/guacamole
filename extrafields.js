@@ -1,8 +1,4 @@
 module.exports = {
-    'extra': {
-        type: String,
-        get: function(v) {
-            return v ? v + ' PLOP' : '';
-        }
-    }
+    'public': String,
+    'ref_club': String
 }

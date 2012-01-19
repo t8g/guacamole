@@ -5,14 +5,14 @@
     },
 
     "mongo": {
-        "connection": "mongodb://localhost/docs"
+        "connection": "mongodb://localhost/guacamole"
     },
 
     "documents": {
         "dirs": {
-            "tmp": "./documents/tmp",
-            "files": "./documents/files",
-            "thumbs": "./documents/thumbs"
+            "tmp": "/home/web/apero/guacamole/documents/tmp",
+            "files": "/home/web/apero/guacamole/documents/files",
+            "thumbs": "/home/web/apero/guacamole/documents/thumbs"
         },
         "blackhole": "/",
         "filters": {
@@ -21,7 +21,7 @@
             "resource.size": "exact",
             "resource.name": "like"
         },
-        "index": ["title", "description"]
+        "index": ["title", "description", "tags"]
     },
 
     "thumbnails": {

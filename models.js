@@ -46,8 +46,9 @@ function define(mongoose, fn) {
             type: String
         },
         'resource': {
-            type: { name: String, file: String, size: Number },
+            type: { name: String, file: String, size: Number, tmp: String, thumbnail: String, mime: String },
             set: function(v) {
+// A commenter pour import de docatl
 
                 // update file
                 if (v.tmp && !v.file) {
@@ -68,6 +69,7 @@ function define(mongoose, fn) {
                     v.file = '/' + filename.substr(0, 2) + '/' + filename;
                     //v.path = '/' + filename.substr(0, 2) + '/';
                 }
+// Fin commentaire import docatl
 
                 // default title
                 if (!this.title) this.title = v.name;
@@ -148,7 +150,7 @@ function define(mongoose, fn) {
             ;
 
         indexables.forEach(function(indexable) {
-            index = index.concat((_this[indexable]) ? _this[indexable].split(' ') : []);
+            index = index.concat(_this[indexable] ? (_.isArray(_this[indexable]) ? _this[indexable] : _this[indexable].split(' ')) : [])
         });
 
         return index;
@@ -166,7 +168,7 @@ function define(mongoose, fn) {
             json[path] = _this.get(path);
         });
         return json;
-    }
+    };
 
     Document_Schema.methods.update = function(values, callback) {
         var _this = this;
@@ -232,6 +234,18 @@ function define(mongoose, fn) {
             });
             query = { $and: tags };
         };
+
+        // search : impossible de le mettre dans le each ci-dessous, pas de helper $and
+        if (search_query = req.search) {
+            // initilisation $and if needed (no tags)
+            if (!query.$and) query.$and = [];
+            var words = search_query.split(' ');
+            words.forEach(function(word){
+                word = word.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+                query.$and.push({"_keywords": new RegExp(word, 'i')});
+            });
+        }
+
         _this = this.find(query);
 
         _.each(req ,function(value, key) {
@@ -251,14 +265,6 @@ function define(mongoose, fn) {
 
                 if (filter == 'exact') _this.where(key, value);
                 if (filter == 'like') _this.regex(key, new RegExp(value.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"), 'i'));
-            }
-
-            if (key == 'search') {
-                var values = value.split(' ');
-                values.forEach(function(value){
-                    value = value.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-                    _this.regex('_keywords', new RegExp(value, 'i'));
-                });
             }
 
         });
