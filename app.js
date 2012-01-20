@@ -34,6 +34,7 @@ var express = require('express')
     , async = require('async')
     , zip = require('node-native-zip')
     , argv = require('optimist').argv
+    , less = require('less')
     ;
 
 /**
@@ -64,6 +65,18 @@ tools.readDir(__dirname + '/public', function(err, files) {
 var app = module.exports = express.createServer();
 
 /**
+ * Enable minification for less files
+ */
+
+express.compiler.compilers.less.compile = function (str, fn) {
+    try {
+        less.render(str, { compress : true }, fn);
+    } catch (err) {
+        fn(err);
+    }
+};
+
+/**
  * Server configuration
  */
 
@@ -77,7 +90,7 @@ app.configure(function() {
             };
         }
     });
-    //app.use(express.compiler({ src: __dirname + '/public', enable: ['less'] }));
+    app.use(express.compiler({ src: __dirname + '/public', enable: ['less'] }));
     app.use(express.bodyParser({ keepExtensions: true, uploadDir: nconf.get('documents:dirs:tmp') }));
     app.use(express.methodOverride());
     app.use(app.router);
@@ -224,9 +237,11 @@ app.put('/documents/:id', function(req, res) {
     Document.findById(req.params.id, function(err, doc) {
         if (err) return res.respond(err, 500);
 
-
-        if (req.files.resource) {
+        if (req.files && req.files.resource) {
             console.log('ici');
+            if (req.body.new_preview) {
+                console.log('Créer un nouvel aperçu');
+            }
             res.respond(doc, 200);
         } else {
             doc.update(req.body, function(err) {

@@ -1,6 +1,6 @@
 ;(function($) {
 
-    $.dirSelector = function(el, options) {
+    $.fn.dirSelector = function(options) {
 
         var defaults = {
             dir: '/'
@@ -8,17 +8,17 @@
            //onSomeEvent: function() {}
         }
 
-        var plugin = this;
+        var plugin = {};
+        plugin.el = $(this);
         plugin.settings = {}
 
         var init = function() {
             plugin.settings = $.extend({}, defaults, options);
-            plugin.el = el;
             addSelect(plugin.settings.dir);
         }
 
         var addSelect = function(dir, dirname) {
-            var li = $('<li class="dropdown" data-dropdown="dropdown"><a class="dropdown-toggle">' + (dirname || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;') + '</a><ul class="dropdown-menu"></lu></li>')
+            var li = $('<li class="dropdown" data-dropdown="dropdown"><a href="#" class="dropdown-toggle">' + (dirname || '<i class="iconic link"></i>') + '</a><ul class="dropdown-menu"></lu></li>')
                 , dirs = dir.split('/')
                 , fulldirname = dir + (dirname || '/')
                 ;
@@ -37,6 +37,7 @@
                         // Si il ne comporte qu'un caractère, c'est le /
                         if (newdir.length === 1) newdir = '';
                         if (plugin.settings.input) plugin.settings.input.val(newdir);
+                        console.log(newdir);
                         addSelect(newdir);
                     });
                 });

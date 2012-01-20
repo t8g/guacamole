@@ -386,7 +386,8 @@ $(function() {
                 tagSource: tags.source(),
                 itemName: 'tags',
                 fieldName: '',
-                allowSpaces: true
+                allowSpaces: true,
+                inputClasses: 'xlarge'
             });
 
             // Default tags
@@ -407,7 +408,7 @@ $(function() {
 
             // @TODO faire mieux, e.g, $(el).dirSelector(map)
             // dir selector
-            var myplugin = new $.dirSelector($documentEditContent.find('ul.dir_select'), {
+            $documentEditContent.find('ul.dir_select').dirSelector({
                 dir: dir,
                 input: $inputDir
             });
@@ -436,9 +437,11 @@ $(function() {
             });
 
             // uploader
-            var $uploadonefile = $('#uploadone input:file');
+            var $uploadonefile = $('#uploadone > input')
+              , $newPreview = $('[name="new_preview"]');
+
             $uploadonefile.on('change', function(e) {
-                if (!this.files.count) return;
+                if (!this.files.length) return;
                 var file = this.files[0];
 
                 // Ne marche pas sur IE9 et Opera http://caniuse.com/#search=formdata
@@ -448,6 +451,8 @@ $(function() {
 
                 formData.append('resource', file);
                 formData.append('_method', 'PUT');
+                $newPreview.prop('checked') && formData.append('new_preview', true);
+                
 
                 // Open the connection
                 xhr.open('POST', '/documents/' + doc._id);
@@ -799,9 +804,7 @@ var templates = {
                 </span>\
                 <progress max=100></progress>'
   , breadcrumb: '<li{{^url}} class="active"{{/url}}>\
-                    {{#url}}<a href="{{url}}">{{/url}}\
-                        {{label}}\
-                    {{#url}}</a>{{/url}}\
+                    {{#url}}<a href="{{url}}">{{/url}}{{label}}{{#url}}</a>{{/url}}\
                     <span class="divider">/</span>'
   , document: '{{#title}}\
                 <tr data-tags="[{{tags}}]">\
@@ -834,19 +837,19 @@ var templates = {
             <fieldset>\
                 <label for="type">Type : </label>\
                 <div class="input">\
-                    <span class="uneditable-input">{{mime}}</span>\
+                    <input class="uneditable-input xlarge" value="{{mime}}" disabled>\
                 </div>\
             </fieldset>\
             <fieldset>\
                 <label for="poids">Poids : </label>\
                 <div class="input">\
-                    <span class="uneditable-input">{{size}} ko</span>\
+                    <input class="uneditable-input xlarge" value="{{size}} ko" disabled>\
                 </div>\
             </fieldset>\
             <fieldset>\
             <label for="date">Date : </label>\
                 <div class="input">\
-                    <span class="uneditable-input">{{created_at}}</span>\
+                    <input class="uneditable-input xlarge" value="{{created_at}}" disabled>\
                 </div>\
             </fieldset>\
             <fieldset>\
@@ -887,12 +890,14 @@ var templates = {
             <div class="actions">\
                 <fieldset>\
                     <label for="replace">Remplacer : </label>\
-                    <div id="uploadone" class="btn primary" data-original-title="Cliquer ou glisser/déposer un document">\
-                        <span class="iconic arrow-up"><label>Upload</label><input type="file">\
-                    </div>\
-                    <div class="optioncheckbox">\
-                        <input type="checkbox" name="Checkboxes" value="option">\
-                        <span>Regénérer l\'aperçu</span>\
+                    <div class="input">\
+                        <div id="uploadone" class="btn primary" data-original-title="Cliquer ou glisser/déposer un document">\
+                            <span class="iconic arrow-up"></span>Upload<input type="file">\
+                        </div>\
+                        <div class="optioncheckbox">\
+                            <input type="checkbox" name="new_preview" value="true">\
+                            <span>Regénérer l\'aperçu</span>\
+                        </div>\
                     </div>\
                 </fieldset>\
                 <fieldset>\
