@@ -10,9 +10,9 @@
 
     "documents": {
         "dirs": {
-            "tmp": "/home/web/apero/guacamole/documents/tmp",
-            "files": "/home/web/apero/guacamole/documents/files",
-            "thumbs": "/home/web/apero/guacamole/documents/thumbs"
+            "tmp": "documents/tmp",
+            "files": "documents/files",
+            "thumbs": "documents/thumbs"
         },
         "blackhole": "/",
         "filters": {
