@@ -9,7 +9,7 @@
         }
 
         var plugin = {};
-        plugin.el = $(this);
+        plugin.el = $(this).empty();
         plugin.settings = {}
 
         var init = function() {
@@ -37,7 +37,6 @@
                         // Si il ne comporte qu'un caractère, c'est le /
                         if (newdir.length === 1) newdir = '';
                         if (plugin.settings.input) plugin.settings.input.val(newdir);
-                        console.log(newdir);
                         addSelect(newdir);
                     });
                 });
@@ -53,7 +52,8 @@
         // }
 
         init();
-
+        
+        return this;
     }
 
 })(jQuery);

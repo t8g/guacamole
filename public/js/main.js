@@ -5,7 +5,7 @@ $(function() {
       , $subDirectory = $('#sub_directory')
       , $tags = $('#tags')
       , $overlays = $('.overlay')
-      //, $openOverlay = []
+      , $openOverlay = []
       , $documents = $('#documents')
       , $masterCheckbox = $documents.find('thead input')
       , $documentCheckboxes = $documents.find('tbody input')
@@ -44,8 +44,9 @@ $(function() {
 
     // Close overlay on click anywhere
     $(document).on('mouseup', function(e) {
+        var $this = $(e.target);
         // Has $openOverlay and target isn't in it
-        if ($openOverlay.length && !$(e.target).parents('.overlay').length) {
+        if ($openOverlay.length && !$this.hasClass('overlay') && !$this.parents('.overlay').length) {
             $openOverlay.overlayToggle(false);
         }
     });
@@ -348,6 +349,7 @@ $(function() {
       , $documentsAction = $documentsForm.find('select')
       , $globalTags = $('.global_tags')
       , $globalTagsTags = $globalTags.find('.tags')
+      , $globalMove = $('.global_move')
       , $documentEdit = $('.document_edit')
       , $documentEditContent = $documentEdit.find('.content')
 
@@ -406,7 +408,6 @@ $(function() {
                 }
             });
 
-            // @TODO faire mieux, e.g, $(el).dirSelector(map)
             // dir selector
             $documentEditContent.find('ul.dir_select').dirSelector({
                 dir: dir,
@@ -505,7 +506,7 @@ $(function() {
     });
 
     // Click on the line => click on the checkbox
-    $documents.on('click', 'tr', function(e) {
+    $documents.on('click', 'tbody > tr', function(e) {
         if (e.target.nodeName !== 'INPUT' && e.target.nodeName !== 'A') {
             $(this).find('input')[0].click()
         }
@@ -614,7 +615,18 @@ $(function() {
                 break;
 
             case 'move':
-                $('.global_move').show();
+                var pathname = location.pathname.split('/');
+                $globalMove.overlayToggle(true)
+                    .find('.dir_select').dirSelector({
+                        dir: pathname[pathname.length - 1],
+                        input: $('[name=global_move_input]')
+                    });
+                $('#save_global_move').off('click').on('click', function(e) {
+                    e.preventDefault();
+                    $.post(url, { ids: ids, path: $('[name=global_move_input]').val() }, function() {
+                        changeContent();
+                    });
+                });
                 break;
 
             case 'delete':
