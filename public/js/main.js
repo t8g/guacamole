@@ -489,6 +489,28 @@ $(function() {
 
                 console.log(files);
             });
+    
+            // Change preview
+            var $previewForm = $('#preview_form');
+            $previewForm.on('change', 'input', function(e) {
+                var input = this
+                  , file = input.files[0]
+                
+                if (/^image\//.test(file.type)) {
+                    var reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        // Remplacer le src de l'image par le data-uri
+                        input.previousElementSibling.src = this.result;
+                        // @TODO sauvegarde côté serveur | ajout action dans le template
+                        //$.post($previewForm.attr('action'), { file: file });
+                    };
+            
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('Ce n\'est pas un fichier image !');
+                }
+            });
 
         });
     });
@@ -638,7 +660,7 @@ $(function() {
                 break;
         }
 
-    })
+    });
 
 
     /********/
@@ -889,7 +911,7 @@ var templates = {
                 </div>\
             </fieldset>\
         </form>\
-        <form>\
+        <form id="preview_form">\
             <fieldset>\
                 <label for="apercu">Aperçu : </label>\
                 <div class="input">\
