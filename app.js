@@ -254,6 +254,19 @@ app.put('/documents/:id', function(req, res) {
 });
 
 /**
+ * PUT documents thumbnail (update thumbnail)
+ */
+
+app.put('/documents/:id/thumbnail', function(req, res) {
+    Document.findById(req.params.id, function(err, doc) {
+        // Edit thumbnail and save
+        doc.createThumbnail(req.files.resource, function(err) {
+            err ? res.respond(err, 500) : doc.save(function(err) { res.respond(err || doc, err ? 500 : 200); });
+        });
+    });
+});
+
+/**
  * Mass move of documents
  *
  * @param {Object} request
@@ -266,21 +279,16 @@ app.post('/documents/batch/move', function(req, res) {
     Document.find({ _id: { $in : req.body.ids } }, function(err, docs) {
         if (err) return res.respond(err, 500);
         var path = req.body.path || '/';
-        // Pour tous les documents
-        docs.forEach(function(doc) {
-            var oldPath = "";
-            // On récupère le dossier
-            doc.tags.some(function(tag) {
-                if (tag.charAt(0) === '/') {
-                    oldPath = tag;
-                    return true;
-                }
-            });
-            // On le remplace par celui choisi
-            doc.tags[doc.tags.indexOf(oldPath)] = path;
-            doc.save();
-        });
-        res.respond(true, 200);
+        
+        async.forEach(
+            docs,
+            function(doc, fn) {
+                doc.update({ path: path }, fn);
+            },
+            function(err) {
+                return res.respond(err || {}, err ? 500 : 200);
+            }
+        );
     });
 });
 

@@ -378,6 +378,9 @@ $(function() {
                     extra: doc.extra || ''
               });
             $documentEditContent.html(render);
+            
+            // Twipsy
+            $documentEditContent.find('[data-twipsy]').twipsy();
 
             // Tagit
             var $editTag = $documentEditContent.find('.edit-tags')
@@ -492,7 +495,10 @@ $(function() {
     
             // Change preview
             var $previewForm = $('#preview_form');
-            $previewForm.on('change', 'input', function(e) {
+            $previewForm
+              .on('click', 'img', function(e) {
+                $previewForm.find('input').show();
+              }).on('change', 'input', function(e) {
                 var input = this
                   , file = input.files[0]
                 
@@ -502,8 +508,15 @@ $(function() {
                     reader.onload = function(e) {
                         // Remplacer le src de l'image par le data-uri
                         input.previousElementSibling.src = this.result;
-                        // @TODO sauvegarde côté serveur | ajout action dans le template
-                        //$.post($previewForm.attr('action'), { file: file });
+                        
+                        var formData = new FormData()
+                          , xhr = new XMLHttpRequest();
+        
+                        formData.append('resource', file);
+                        formData.append('_method', 'PUT');
+                        
+                        xhr.open('POST', $previewForm.attr('action'));
+                        xhr.send(formData);
                     };
             
                     reader.readAsDataURL(file);
@@ -822,124 +835,28 @@ $(function() {
             }
         });
     };
+
+
+    /*************/
+    /* Templates */
+    /* Done with Hogan.js (http://twitter.github.com/hogan.js/) based on mustache (http://mustache.github.com/mustache.5.html) */
+    /*************/
+    
+    var templates = {
+        upload: false
+      , breadcrumb: false
+      , document: false
+      , subDir: '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'
+      , filterType: false
+      , editForm: false
+    }
+
+    // Get the partial if needed
+    Object.keys(templates).forEach(function(key) {
+        if (!templates[key]) {
+          $.get('/partials/' + key + '.html', function(data) {
+            templates[key] = data;
+          })
+        }
+    });
 });
-
-
-/*************/
-/* Templates */
-/* Done with Hogan.js (http://twitter.github.com/hogan.js/) based on mustache (http://mustache.github.com/mustache.5.html) */
-/*************/
-
-
-var templates = {
-    upload: '<li>\
-                <span class="label warning">\
-                	<span class="iconic plus-alt"></span>{{name}}\
-                </span>\
-                <progress max=100></progress>'
-  , breadcrumb: '<li{{^url}} class="active"{{/url}}>\
-                    {{#url}}<a href="{{url}}">{{/url}}{{label}}{{#url}}</a>{{/url}}\
-                    <span class="divider">/</span>'
-  , document: '{{#title}}\
-                <tr data-tags="[{{tags}}]">\
-                    <td><a href="/documents/{{id}}">{{title}}\
-                    <td>{{created_at}}\
-                    <td>{{size}} ko\
-                    <td>{{mime}}\
-                    <td><input type="checkbox" value="{{id}}">\
-                {{/title}}'
-  , subDir: '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'
-  , filterType: '<option value>\
-                {{#types}}\
-                <option value="{{mime}}">{{label}}\
-                {{/types}}'
-  , editForm: '\
-    <form method="post" action="/documents/{{id}}" class="edit_form">\
-        <input type="hidden" name="_method" value="PUT">\
-            <fieldset>\
-                <label for="title">Titre : </label>\
-                    <div class="input">\
-                        <input class="xlarge" type="text" name="title" id="title" value="{{title}}">\
-                    </div>\
-            </fieldset>\
-            <fieldset>\
-                <label for="description">Description : </label>\
-                <div class="input">\
-                    <textarea class="xlarge" name="description" id="description" rows="3">{{description}}</textarea>\
-                </div>\
-            </fieldset>\
-            <fieldset>\
-                <label for="type">Type : </label>\
-                <div class="input">\
-                    <input class="uneditable-input xlarge" value="{{mime}}" disabled>\
-                </div>\
-            </fieldset>\
-            <fieldset>\
-                <label for="poids">Poids : </label>\
-                <div class="input">\
-                    <input class="uneditable-input xlarge" value="{{size}} ko" disabled>\
-                </div>\
-            </fieldset>\
-            <fieldset>\
-            <label for="date">Date : </label>\
-                <div class="input">\
-                    <input class="uneditable-input xlarge" value="{{created_at}}" disabled>\
-                </div>\
-            </fieldset>\
-            <fieldset>\
-                <label for="tags">Tags : </label>\
-                <ul class="edit-tags"></ul>\
-            </fieldset>\
-            <fieldset>\
-                <label for="repertoire">Répertoire : </label>\
-                <div class="input">\
-                    <ul class="dir_select"></ul>\
-                    <input type="hidden" name="repertoire" id="repertoire" value="{{repertoire}}" />\
-                </div>\
-            </fieldset>\
-            <fieldset>\
-                <label for="extra">Extra : </label>\
-                <div class="input">\
-                    <input class="xlarge" type="text" name="extra" id="extra" value="{{extra}}" />\
-                </div>\
-            </fieldset>\
-            <fieldset>\
-                <div class="actions">\
-                    <button type="button" class="btn danger delete"><span class="iconic trash"></span>Supprimer</button>\
-                    <button type="button" class="btn danger hide"><span class="iconic x"></span>Annuler</button>\
-                    <button class="btn success"><span class="iconic check"></span>Sauvegarder</button>\
-                </div>\
-            </fieldset>\
-        </form>\
-        <form id="preview_form">\
-            <fieldset>\
-                <label for="apercu">Aperçu : </label>\
-                <div class="input">\
-                    <img src="{{thumbnail}}">\
-                    <input class="input-file xlarge" id="fileInput" name="fileInput" type="file">\
-                </div>\
-            </fieldset>\
-        </form>\
-        <form id="editfiles">\
-            <div class="actions">\
-                <fieldset>\
-                    <label for="replace">Remplacer : </label>\
-                    <div class="input">\
-                        <div id="uploadone" class="btn primary" data-original-title="Cliquer ou glisser/déposer un document">\
-                            <span class="iconic arrow-up"></span>Upload<input type="file">\
-                        </div>\
-                        <div class="optioncheckbox">\
-                            <input type="checkbox" name="new_preview" value="true">\
-                            <span>Regénérer l\'aperçu</span>\
-                        </div>\
-                    </div>\
-                </fieldset>\
-                <fieldset>\
-                    <label for="download">Télécharger : </label>\
-                    <div class="input">\
-                        <a class="btn primary" href="{{file}}"><span class="iconic arrow-bottom"></span>Download</a>\
-                    </div>\
-                </fieldset>\
-            </div>\
-        </form>'
-}

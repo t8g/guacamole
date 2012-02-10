@@ -1,0 +1,88 @@
+<form method="post" action="/documents/{{id}}" class="edit_form">
+    <input type="hidden" name="_method" value="PUT">
+        <fieldset>
+            <label for="title">Titre : </label>
+                <div class="input">
+                    <input class="xlarge" type="text" name="title" id="title" value="{{title}}">
+                </div>
+        </fieldset>
+        <fieldset>
+            <label for="description">Description : </label>
+            <div class="input">
+                <textarea class="xlarge" name="description" id="description" rows="3">{{description}}</textarea>
+            </div>
+        </fieldset>
+        <fieldset>
+            <label for="type">Type : </label>
+            <div class="input">
+                <input class="uneditable-input xlarge" value="{{mime}}" disabled>
+            </div>
+        </fieldset>
+        <fieldset>
+            <label for="poids">Poids : </label>
+            <div class="input">
+                <input class="uneditable-input xlarge" value="{{size}} ko" disabled>
+            </div>
+        </fieldset>
+        <fieldset>
+        <label for="date">Date : </label>
+            <div class="input">
+                <input class="uneditable-input xlarge" value="{{created_at}}" disabled>
+            </div>
+        </fieldset>
+        <fieldset>
+            <label for="tags">Tags : </label>
+            <ul class="edit-tags"></ul>
+        </fieldset>
+        <fieldset>
+            <label for="repertoire">Répertoire : </label>
+            <div class="input">
+                <ul class="dir_select"></ul>
+                <input type="hidden" name="repertoire" id="repertoire" value="{{repertoire}}" />
+            </div>
+        </fieldset>
+        <fieldset>
+            <label for="extra">Extra : </label>
+            <div class="input">
+                <input class="xlarge" type="text" name="extra" id="extra" value="{{extra}}" />
+            </div>
+        </fieldset>
+        <fieldset>
+            <div class="actions">
+                <button type="button" class="btn danger delete"><span class="iconic trash"></span>Supprimer</button>
+                <button type="button" class="btn danger hide"><span class="iconic x"></span>Annuler</button>
+                <button class="btn success"><span class="iconic check"></span>Sauvegarder</button>
+            </div>
+        </fieldset>
+</form>
+<form id="preview_form" action="/documents/{{id}}/thumbnail">
+    <fieldset>
+        <label for="apercu">Aperçu : </label>
+        <div class="input">
+            <img src="{{thumbnail}}" data-twipsy title="Cliquer sur l\'image pour changer l\'aperçu">
+            <input class="input-file xlarge" id="fileInput" name="fileInput" type="file">
+        </div>
+    </fieldset>
+</form>
+<form id="editfiles">
+    <div class="actions">
+        <fieldset>
+            <label for="replace">Remplacer : </label>
+            <div class="input">
+                <div id="uploadone" class="btn primary" data-original-title="Cliquer ou glisser/déposer un document">
+                    <span class="iconic arrow-up"></span>Upload<input type="file">
+                </div>
+                <div class="optioncheckbox">
+                    <input type="checkbox" name="new_preview" value="true">
+                    <span>Regénérer l\'aperçu</span>
+                </div>
+            </div>
+        </fieldset>
+        <fieldset>
+            <label for="download">Télécharger : </label>
+            <div class="input">
+                <a class="btn primary" href="{{file}}"><span class="iconic arrow-bottom"></span>Download</a>
+            </div>
+        </fieldset>
+    </div>
+</form>

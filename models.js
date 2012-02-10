@@ -139,6 +139,26 @@ function define(mongoose, fn) {
         // sinon passe à null (retour fonc sur mime)
     });
 
+    // virtual path getter and setter
+    Document_Schema
+    .virtual('path')
+    .get(function() {
+        var path = "";
+        this.tags.some(function(tag) {
+            if (tag.charAt(0) === '/') {
+                path = tag;
+                return true;
+            }
+        });
+        return path;
+    })
+    .set(function(path) {
+        var tags = this.tags;
+        tags.splice(tags.indexOf(this.path), 1, path);
+        this.set('tags', tags);
+    });
+
+
     // Extra fields (from extrafields.js file)
     Document_Schema.add(extrafields);
 
@@ -180,14 +200,29 @@ function define(mongoose, fn) {
 
 
     // thumbnail maker with imagemagick
-    Document_Schema.methods.createThumbnail = function(callback) {
-        var options = nconf.get('thumbnails:options');
+    Document_Schema.methods.createThumbnail = function(resource, callback) {
+        var options = nconf.get('thumbnails:options')
+          , srcPath = "";
+        
+        // @TODO resource.mime
+        // Si resource n'est une fonction c'est une création
+        if (typeof resource === 'function') {
+            callback = resource;
+            resource = this.resource;
+            srcPath = nconf.get('documents:dirs:files') + resource.file;
+        }
+        // Sinon c'est une maj
+        else {
+            resource.file = resource.path;
+            srcPath = "@TODO"
+            console.log(nconf.get('documents:dirs:files') + resource.file + '[0]')
+        }
 
-        if (nconf.get('thumbnails:thumbables').indexOf(this.resource.mime) !== -1) {
+        if (nconf.get('thumbnails:thumbables').indexOf(resource.mime) !== -1) {
             var _this = this;
-            var filename = this.resource.file.split('/').pop();
+            var filename = resource.file.split('/').pop();
             im.resize(_.extend(options, {
-                srcPath: nconf.get('documents:dirs:files') + this.resource.file + '[0]', // [0] first page pdf conversion
+                srcPath: srcPath + '[0]', // [0] first page pdf conversion
                 dstPath: nconf.get('documents:dirs:tmp') + '/' + filename + '.png'
             }), function(err) {
                 if (err) {
