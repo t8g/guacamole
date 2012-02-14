@@ -21,7 +21,7 @@ function define(mongoose, fn) {
 
     var Schema = mongoose.Schema,
         ObjectId = Schema.ObjectId;
-
+        
     /*
      * Schemas : Document
      */
@@ -97,6 +97,7 @@ function define(mongoose, fn) {
                 return tags;
             }
         },
+        'statistics': [Date],
         'status': Number, // 0 or undefined = exist, 1 = deleted
         'created_at': {
             type: Date,
@@ -155,6 +156,18 @@ function define(mongoose, fn) {
         var tags = this.tags;
         tags.splice(tags.indexOf(this.path), 1, path);
         this.set('tags', tags);
+    });
+
+    // Virtual download
+    Document_Schema
+    .virtual('addDownload')
+    .set(function() {
+        var stat = this.statistics;
+        stat.push(new Date());
+        this.set('statistics', stat);
+        this.save();
+        // For chaining
+        return this;
     });
 
 
@@ -353,6 +366,10 @@ function define(mongoose, fn) {
         return this.find(query).sort('label', 'ascending').execFind(callback);
 
     };
+    
+    /**
+     * Collections' declaration
+     */
 
     var Document = mongoose.model('Document', Document_Schema);
 
@@ -381,6 +398,7 @@ function define(mongoose, fn) {
     };
 
     var Tag = mongoose.model('Tag', Tag_Schema);
+    
 
     // Launch callback
     fn();

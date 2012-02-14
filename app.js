@@ -429,9 +429,8 @@ app.get('/documents/:id/file', function(req, res, next) {
 
     Document.findById(req.params.id, function(err, doc) {
         if (err || _.isEmpty(doc)) res.respond('File Not Found', 404);
-        // @TODO : statistiques de téléchargement
-//        var file =
-
+        // Add the cpt
+        doc.set('addDownload')
         tools.serve(
             nconf.get('documents:dirs:files') + doc.resource.file,
             [
