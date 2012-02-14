@@ -49,7 +49,6 @@ function define(mongoose, fn) {
             type: { name: String, file: String, size: Number, tmp: String, thumbnail: String, mime: String },
             set: function(v) {
 // A commenter pour import de docatl
-
                 // update file
                 if (v.tmp && !v.file) {
                     var filename = v.tmp.split('/').pop();
@@ -201,10 +200,11 @@ function define(mongoose, fn) {
 
     // thumbnail maker with imagemagick
     Document_Schema.methods.createThumbnail = function(resource, callback) {
-        var options = nconf.get('thumbnails:options')
-          , srcPath = "";
+        var doc = this
+          , options = nconf.get('thumbnails:options')
+          , srcPath = null
+          , dstPath = null;
         
-        // @TODO resource.mime
         // Si resource n'est une fonction c'est une création
         if (typeof resource === 'function') {
             callback = resource;
@@ -214,21 +214,19 @@ function define(mongoose, fn) {
         // Sinon c'est une maj
         else {
             resource.file = resource.path;
-            srcPath = "@TODO"
-            console.log(nconf.get('documents:dirs:files') + resource.file + '[0]')
+            srcPath = resource.path;
+            dstPath = resource.path + '.png';
         }
-
+        
         if (nconf.get('thumbnails:thumbables').indexOf(resource.mime) !== -1) {
-            var _this = this;
             var filename = resource.file.split('/').pop();
             im.resize(_.extend(options, {
                 srcPath: srcPath + '[0]', // [0] first page pdf conversion
-                dstPath: nconf.get('documents:dirs:tmp') + '/' + filename + '.png'
+                dstPath: dstPath || nconf.get('documents:dirs:tmp') + '/' + filename + '.png'
             }), function(err) {
                 if (err) {
-                    _this.resource.thumbnail = '';
-                    callback(null);
-                    //callback(err);
+                    doc.set('resource.thumbnail', '');
+                    callback(err);
                 } else {  // move generated thumbnail
                     var pathfile = nconf.get('documents:dirs:thumbs') + '/' + filename.substr(0, 2);
                     path.exists(pathfile, function(exist) {
@@ -236,7 +234,7 @@ function define(mongoose, fn) {
                         fs.rename(nconf.get('documents:dirs:tmp') + '/' + filename + '.png', pathfile + '/' + filename + '.png', function(err) {
                             if (err) callback(err);
                             else {
-                                _this.resource.thumbnail = _this.resource.file + '.png';
+                                doc.set('resource.thumbnail', '/' + filename.substr(0, 2) + '/' + filename + '.png');
                                 callback(null);
                             }
                         });
@@ -244,7 +242,7 @@ function define(mongoose, fn) {
                 }
             });
         } else {
-            this.resource.thumbnail = '';
+            doc.set('resource.thumbnail', '');
             callback(null);
         }
     };

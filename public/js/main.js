@@ -502,31 +502,47 @@ $(function() {
                 var input = this
                   , file = input.files[0]
                 
+                // Mise à jour du thumbnail seulement pour les images
                 if (/^image\//.test(file.type)) {
                     var reader = new FileReader();
 
                     reader.onload = function(e) {
                         // Remplacer le src de l'image par le data-uri
                         input.previousElementSibling.src = this.result;
-                        
-                        var formData = new FormData()
-                          , xhr = new XMLHttpRequest();
-        
-                        formData.append('resource', file);
-                        formData.append('_method', 'PUT');
-                        
-                        xhr.open('POST', $previewForm.attr('action'));
-                        xhr.send(formData);
+                        sendThumbnail(file, $previewForm.attr('action'));
                     };
             
                     reader.readAsDataURL(file);
+                // Pour le PDF on attend la fin de la requête AJAX
+                } else if (/\/pdf$/.test(file.type)) {
+                    var xhr = sendThumbnail(file, $previewForm.attr('action'));
+
+                    xhr.addEventListener('readystatechange', function(e) {
+                        if (this.status === 200 && this.readyState === 4) {
+                            var response = JSON.parse(this.response);
+                            // Force l'affichage du nouveau thumbnail
+                            input.previousElementSibling.src = '/documents/' + response._id + '/thumbnail';
+                        }
+                    });
                 } else {
                     alert('Ce n\'est pas un fichier image !');
                 }
             });
-
         });
     });
+    
+    // Requête d'envoie du nouveau thumbnail
+    var sendThumbnail = function(file, action) {
+        var formData = new FormData()
+          , xhr = new XMLHttpRequest();
+
+        formData.append('resource', file);
+        formData.append('_method', 'PUT');
+        
+        xhr.open('POST', action);
+        xhr.send(formData);
+        return xhr;
+    }
 
     // Click on the checkboxes
     $documents.on('change', $documentCheckboxes, function(e) {

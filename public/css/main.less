@@ -105,8 +105,11 @@ header {
 .document_edit {
 	img {
 		display: block;
+		max-width: 64px; // Cf conf.json
+		max-height: 64px; // Cf conf.json
 		border: 1px solid #ccc;
   	.border-radius(3px);
+  	cursor: pointer;
 	}
 	fieldset {
 		margin-bottom: 0;
@@ -118,6 +121,9 @@ header {
 			padding: 0;
 		}
 	}
+}
+#fileInput {
+  display: none;
 }
 /* FOOTER */
 #footer {

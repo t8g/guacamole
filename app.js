@@ -194,7 +194,6 @@ app.get('/documents/:id', function(req, res) {
  */
 
 app.post('/documents', function(req, res) {
-
     // pour tester
     //curl --silent -F resource=@test.pdf http://localhost:3000/documents -F tags=/bla | json
     if (req.files.resource) {
@@ -280,8 +279,7 @@ app.post('/documents/batch/move', function(req, res) {
         if (err) return res.respond(err, 500);
         var path = req.body.path || '/';
         
-        async.forEach(
-            docs,
+        async.forEach(docs,
             function(doc, fn) {
                 doc.update({ path: path }, fn);
             },
