@@ -5,6 +5,27 @@
 header {
 	margin-bottom: 40px;
 }
+.topbar .dropdown-login > li {
+  display: none;
+}
+// IE9+
+.dropdown-login.notLogged > li:last-child {
+  display: block;
+}
+.dropdown-login:not(.notLogged) > li:first-child {
+  display: block;
+}
+.dropdown-login > :last-child > .dropdown-menu {
+  padding: 10px 15px;
+}
+.dropdown-login input {
+  width: auto;
+  margin: 0 0 5px;
+}
+.dropdown-login button {
+  width: auto;
+  margin-top: 10px;
+}
 /* CONTENT */
 #content {
 	position: relative;
