@@ -35,6 +35,8 @@ var express = require('express')
     , zip = require('node-native-zip')
     , argv = require('optimist').argv
     , less = require('less')
+    , passport = require('passport')
+    , LocalStrategy = require('passport-local').Strategy
     ;
 
 /**
@@ -93,6 +95,8 @@ app.configure(function() {
     app.use(express.compiler({ src: __dirname + '/public', enable: ['less'] }));
     app.use(express.bodyParser({ keepExtensions: true, uploadDir: nconf.get('documents:dirs:tmp') }));
     app.use(express.methodOverride());
+    app.use(passport.initialize());
+    app.use(passport.session());
     app.use(app.router);
     app.use(express.static(__dirname + '/public'));
 });
@@ -119,6 +123,7 @@ app.configure('production', function() {
 models.define(mongoose, function() {
     app.Document = Document = mongoose.model('Document');
     app.Tag = Tag = mongoose.model('Tag');
+    app.User = User = mongoose.model('User');
     db = mongoose.connect(nconf.get('mongo:connection'));
 });
 
@@ -179,6 +184,9 @@ app.get('/documents', function(req, res) {
  */
 
 app.get('/documents/:id', function(req, res) {
+    User.findById('4f3a8b4f514f99e31a000001', function(err, user) {
+        
+    });
     Document.findById(req.params.id, function(err, doc) {
         res.respond(err || doc.toJSON2(), err ? 500 : ( doc ? 200 : 404 ));
     });
@@ -457,9 +465,11 @@ app.get('/documents/:id/file', function(req, res, next) {
 // }):
 
 
+
 /**
  * TAGS Routes :
  */
+
 
 /**
  * GET /tags : all tags
@@ -490,6 +500,44 @@ app.del('/tags/:id', function(req, res) {
     res.writeHead(501, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ message: 'not implemented' }));
 
+});
+
+
+
+/**
+ * USERS Routes :
+ */
+
+
+// @TODO http://passportjs.org/guide/authenticate.html
+passport.use(new LocalStrategy(
+    function(login, password, done) {
+        User.findOne({ email: login }, function (err, user) {
+            if (err) { return done(err); }
+            if (!user) { return done(null, false); }
+            if (!user.validPassword(password)) { return done(null, false); }
+            return done(null, user);
+        });
+    }
+));
+/**
+ * GET login: connect the user
+ */
+
+app.get('/login', function(req, res) {
+    User.findOne({ email: req.query.login }, function(err, user) {
+        // Si l'on a trouvé l'utilisateurr
+        if (user) {
+            // Si le mot de passe est correct
+            if (user.validPassword(req.query.password)) {
+                res.send(user, 200);
+            } else {
+                res.send('Mauvais mot de passe', 200);
+            }
+        } else {
+            res.send('Pas d\'utilisateur', 200);
+        }
+    });
 });
 
 /**

@@ -4,6 +4,7 @@ var fs = require('fs')
     , im = require('imagemagick')
     , _ = require('underscore')
     , nconf = require('nconf')
+    , sha1 = require('sha1')
     , extrafields = require('./extrafields')
     ;
 
@@ -366,6 +367,34 @@ function define(mongoose, fn) {
         return this.find(query).sort('label', 'ascending').execFind(callback);
 
     };
+
+    /*
+     * Schemas : User
+     */
+
+    User_Schema = new Schema({
+        name: String
+      , email: String
+      , salt: String
+      , password: String
+      // @TODO gérer les roles 
+    })
+    .pre('save', function(next) {
+        if (!this.salt) {
+            this.salt = sha1(this.email + +new Date);
+        }
+        this.password = sha1(this.salt + this.password);
+        next();
+    });
+    
+    // Valid the password
+    User_Schema
+    .virtual('validPassword')
+    .get(function() {
+        return function(password) {
+            return sha1(this.salt + password) === this.password;
+        }
+    })
     
     /**
      * Collections' declaration
@@ -399,6 +428,7 @@ function define(mongoose, fn) {
 
     var Tag = mongoose.model('Tag', Tag_Schema);
     
+    var User = mongoose.model('User', User_Schema);
 
     // Launch callback
     fn();
