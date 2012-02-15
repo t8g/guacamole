@@ -394,7 +394,17 @@ function define(mongoose, fn) {
         return function(password) {
             return sha1(this.salt + password) === this.password;
         }
-    })
+    });
+    
+    // Return the public
+    User_Schema
+    .virtual('getPublic')
+    .get(function() {
+        return {
+            name: this.name
+          , email: this.email
+        }
+    });
     
     /**
      * Collections' declaration

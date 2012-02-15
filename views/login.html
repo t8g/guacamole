@@ -1,0 +1,54 @@
+<!doctype html>
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <title>Guacamole</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/bootstrap-apple-57x57.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/bootstrap-apple-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/bootstrap-apple-114x114.png">
+
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Lato|Snippet">
+    <link rel="stylesheet" href="/css/bootstrap.css">
+</head>
+<body>
+    <form action="/login" method="POST">
+        <input type="email" name="username" required placeholder="Email">
+        <input type="password" name="password" required placeholder="Mot de passe">
+        <input type="hidden" name="haveToRedirect" value="1">
+        <button type="submit" class="btn info">Se connecter</button>
+    </form>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script>
+$('form').on('submit', function(e, letSubmit) {
+    // Let the form submitting itself
+    if (letSubmit) {
+        return true;
+    }
+    e.preventDefault();
+    var form = this
+      , $form = $(form);
+
+    $.post(form.action, $form.serialize(), function(res) {
+        // Error
+        $form.find('input').removeClass('error');
+        if (res.hasError) {
+            $form.find('[name="' + res.field + '"]').addClass('error');
+            alert(res.message)
+        } else {
+            // Submit the form with preventing the default behaviour
+            $form.trigger('submit', true)
+        }
+    })
+});
+</script>
+</html>

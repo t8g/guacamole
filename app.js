@@ -93,8 +93,10 @@ app.configure(function() {
         }
     });
     app.use(express.compiler({ src: __dirname + '/public', enable: ['less'] }));
+    app.use(express.cookieParser());
     app.use(express.bodyParser({ keepExtensions: true, uploadDir: nconf.get('documents:dirs:tmp') }));
     app.use(express.methodOverride());
+    app.use(express.session({ secret: 'keyboard cat' }));
     app.use(passport.initialize());
     app.use(passport.session());
     app.use(app.router);
@@ -184,9 +186,6 @@ app.get('/documents', function(req, res) {
  */
 
 app.get('/documents/:id', function(req, res) {
-    User.findById('4f3a8b4f514f99e31a000001', function(err, user) {
-        
-    });
     Document.findById(req.params.id, function(err, doc) {
         res.respond(err || doc.toJSON2(), err ? 500 : ( doc ? 200 : 404 ));
     });
@@ -508,37 +507,107 @@ app.del('/tags/:id', function(req, res) {
  * USERS Routes :
  */
 
+/**
+ * Passport/user functions
+ */
+passport.serializeUser(function(user, done) {
+    done(null, user.id);
+});
 
-// @TODO http://passportjs.org/guide/authenticate.html
+passport.deserializeUser(function(id, done) {
+    User.findOne(id, function (err, user) {
+        done(err, user);
+    });
+});
+
 passport.use(new LocalStrategy(
-    function(login, password, done) {
-        User.findOne({ email: login }, function (err, user) {
-            if (err) { return done(err); }
-            if (!user) { return done(null, false); }
-            if (!user.validPassword(password)) { return done(null, false); }
-            return done(null, user);
-        });
+    function(username, password, done) {
+        process.nextTick(function () {
+            User.findOne({ email: username }, function (err, user) {
+                if (err) return done(err);
+                if (!user) {
+                    return done(null, {
+                        hasError: true
+                      , field: 'username'
+                      , message: 'Utilisateur inconnu'
+                    });
+                }
+                if (!user.validPassword(password)) {
+                    return done(null, {
+                        hasError: true
+                      , field: 'password'
+                      , message: 'Mauvais mot de passe'
+                    });
+                }
+                return done(null, user);
+            });
+        })
     }
 ));
+
+// getUser middleware
+var loadUser = function(req, res, next) {
+    if (req.user) {
+        next();
+    } else {
+        res.redirect('/login');
+    }
+}
+
 /**
  * GET login: connect the user
  */
 
-app.get('/login', function(req, res) {
-    User.findOne({ email: req.query.login }, function(err, user) {
-        // Si l'on a trouvé l'utilisateurr
-        if (user) {
-            // Si le mot de passe est correct
-            if (user.validPassword(req.query.password)) {
-                res.send(user, 200);
-            } else {
-                res.send('Mauvais mot de passe', 200);
-            }
-        } else {
-            res.send('Pas d\'utilisateur', 200);
-        }
-    });
+app.get('/login', function(req, res, next) {
+    if (req.user) {
+        res.redirect('home');
+    } else {
+        res.render('login.html', { layout: false });
+    }
 });
+
+/**
+ * POST login: connect the user
+ */
+
+app.post('/login', function(req, res, next) {
+    passport.authenticate('local', function(err, user) {
+        if (err) return next(err);
+        if (user.hasError) {
+            return res.send(user);
+        } else {
+            req.logIn(user, function(err) {
+                if (err) throw err;
+                return req.body.haveToRedirect ?
+                    res.redirect('home') :
+                    res.send(user.getPublic);
+            });
+        }
+    })(req, res, next);
+});
+
+/**
+ * POST logout: deconnect the user
+ */
+
+app.get('/logout', function(req, res, next) {
+    req.logOut();
+    res.redirect('/login');
+});
+
+
+/**
+ * GET getUser: get the current user
+ */
+
+app.get('/getUser', function(req, res, next) {
+    if (req.user) {
+        return res.send(req.user.getPublic);
+    } else {
+        return res.send(null);
+    }
+});
+
 
 /**
  * Documentation :
@@ -570,7 +639,7 @@ app.get('/documentation', function(req, res) {
 
 });
 
-app.get('/*', function(req, res, next) {
+app.get('/*', loadUser, function(req, res, next) {
     if ( public_resources.indexOf(__dirname + '/public/' + req.params[0]) === -1 ) res.render('index.html', { layout: false });
     else next();
 });

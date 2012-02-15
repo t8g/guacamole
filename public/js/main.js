@@ -1,6 +1,8 @@
 $(function() {
     /* jQuery objects */
     var $window = $(window)
+      , $modal = $('.modal')
+      , $dropdown = $('.dropdown-menu')
       , $breadcrumb = $('.breadcrumb')
       , $subDirectory = $('#sub_directory')
       , $tags = $('#tags')
@@ -20,6 +22,8 @@ $(function() {
     /********/
     /* Misc */
     /********/
+   
+    // Overlay
     window.$openOverlay = []
     // hide or show overlay, set data-open (for esc-key close action), scroll
     $.fn.overlayToggle = function(open) {
@@ -30,7 +34,7 @@ $(function() {
     };
 
     // close button on overlays
-    $('.hide').on('click', function(e) {
+    $('.btn.hide').on('click', function(e) {
         e.preventDefault();
         $openOverlay.overlayToggle(false);
     });
@@ -53,6 +57,65 @@ $(function() {
 
     // Twipsy
     $('[data-twipsy]').twipsy();
+
+    // Modal
+    $modal.modal({
+        backdrop: true
+    });
+
+    /**************/
+    /* Connection */
+    /**************/
+
+    // Get the user
+    getUser = function(user) {
+            var user = user || null;
+            if (!user) {
+                $.ajax({
+                    async: false
+                  , url: '/getUser'
+                  , success: function(res) {
+                        user = res;
+                    }
+                });
+            }
+            
+            if (user) {
+                $('.notLogged').removeClass('notLogged');
+                $('.dropdown-login b').text(user.name);
+            }
+            return user;
+        }
+      , user = getUser();
+    
+    $dropdown.find('form')
+    // Prevent the click on the form to close the dropdown
+    .on('click', function(e) {
+        e.stopPropagation();
+    }).on('submit', function(e) {
+        e.preventDefault();
+        var form = this
+          , $form = $(form);
+
+        $.post(form.action, $form.serialize(), function(res) {
+            // Error
+            $form.find('input').removeClass('error');
+            if (res.hasError) {
+                $form.find('[name="' + res.field + '"]').addClass('error');
+                alert(res.message)
+            } else {
+                user = getUser(res);
+
+                var template = Hogan.compile(templates.welcome)
+                  , render = template.render({ name: user.name });
+                console.log(render)
+                
+                var template = Hogan.compile(templates.modalConnexion)
+                  , render = template.render({ name: user.name });
+                $modal.html(render).modal('show');
+            }
+        })
+    });
 
     /********/
     /* Tags */
@@ -496,9 +559,9 @@ $(function() {
             // Change preview
             var $previewForm = $('#preview_form');
             $previewForm
-              .on('click', 'img', function(e) {
+            .on('click', 'img', function(e) {
                 $previewForm.find('input').show();
-              }).on('change', 'input', function(e) {
+            }).on('change', 'input', function(e) {
                 var input = this
                   , file = input.files[0]
                 
@@ -859,7 +922,8 @@ $(function() {
     /*************/
     
     var templates = {
-        upload: false
+        modalConnexion: false
+      , upload: false
       , breadcrumb: false
       , document: false
       , subDir: '<li><a href="{{url}}" title="{{label}}"><i class="iconic arrow-right-alt"></i><span>{{label}}</span></a>'

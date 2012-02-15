@@ -92,12 +92,13 @@
                     -->
                     <ul class="nav secondary-nav dropdown-login notLogged">
                         <!-- Si connecter -->
+                        <li><p class="pull-left">Bienvenue <b></b></p>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="iconic cog"></i>Gestion application</a>
                             <ul class="dropdown-menu">
-                                <li><a href="#"><span class="iconic user"></span>Gestion utilisateur</a></li>
+                                <li><a href="#"><span class="iconic user"></span>Exemple</a></li>
                                 <li class="divider"></li>
-                                <li><a href="#"><span class="iconic x"></span>Déconnexion</a></li>
+                                <li><a href="/logout"><span class="iconic x"></span>Déconnexion</a></li>
                             </ul>
                         </li>
                         <!-- Sinon -->
@@ -105,9 +106,9 @@
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="iconic user"></i>Connexion</a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <form class="" action="/?" method="get">
-                                        <input type="text" placeholder="Email" name="login">
-                                        <input type="password" placeholder="Mot de passe" name="password">
+                                    <form action="/login" method="POST">
+                                        <input type="email" name="username" required placeholder="Email">
+                                        <input type="password" name="password" required placeholder="Mot de passe">
                                         <button type="submit" class="btn info">Se connecter</button>
                                     </form>
                                 </li>
@@ -287,7 +288,8 @@
             </div>
         </div>
     </footer>
-
+    
+    <div class="modal hide fade"></div>
 <!-- JavaScript at the bottom for fast page loading -->
 <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
@@ -307,6 +309,7 @@
 <script src="/js/bootstrap/bootstrap-scrollspy.js"></script>
 <script src="/js/bootstrap/bootstrap-buttons.js"></script>
 <script src="/js/bootstrap/bootstrap-tabs.js"></script>
+<script src="/js/bootstrap/bootstrap-modal.js"></script>
 <script src="/js/dir-selector.js"></script>
 
 <script src="/js/application.js"></script>
